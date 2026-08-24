@@ -1,0 +1,55 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+vendor/
+target/
+build/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Maven/Gradle
+.mvn/
+.gradle/
+
+# Quarkus
+quarkus.log
+
+# Java
+*.class
+*.jar
+*.war
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
+
+# Misc
+*.tmp
+*.bak

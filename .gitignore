@@ -1,0 +1,24 @@
+# Backend
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.env
+
+# App Flutter
+app/.dart_tool/
+app/build/
+app/.packages
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/ios/Pods/
+app/ios/.symlinks/
+app/android/.gradle/
+app/local.properties
+
+# IDE / SO
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Secretos
+.env
