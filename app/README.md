@@ -38,6 +38,12 @@ flutter run
 
 **Android emulator** (default): uses `http://10.0.2.2:8080` for backend.
 
+**iOS simulator:** shares the host network, so `localhost` reaches the backend directly.
+
+```bash
+flutter run --dart-define=BACKEND_URL=http://localhost:8080
+```
+
 **Physical device:**
 
 ```bash

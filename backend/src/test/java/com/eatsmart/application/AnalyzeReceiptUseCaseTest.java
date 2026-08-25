@@ -77,13 +77,14 @@ class AnalyzeReceiptUseCaseTest {
         FakePrimaryGateway primary = new FakePrimaryGateway();
         doReturn(List.of(handle(primary))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
-        doReturn(new AnalyzeResponse(List.of("leche"), "sug")).when(resultParser).parse("raw");
+        doReturn(new AnalyzeResponse(List.of("leche"), "sug", 6)).when(resultParser).parse("raw");
 
         AnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
                 "LOSE", false, "", "NONE");
 
         assertThat(response.products()).containsExactly("leche");
         assertThat(response.suggestions()).isEqualTo("sug");
+        assertThat(response.score()).isEqualTo(6);
     }
 
     @Test
@@ -93,7 +94,7 @@ class AnalyzeReceiptUseCaseTest {
         FakeFallbackGateway fallback = new FakeFallbackGateway();
         doReturn(List.of(handle(primary), handle(fallback))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
-        doReturn(new AnalyzeResponse(List.of("pan"), "sug2")).when(resultParser).parse("raw");
+        doReturn(new AnalyzeResponse(List.of("pan"), "sug2", 4)).when(resultParser).parse("raw");
 
         AnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
                 "LOSE", false, "", "NONE");
@@ -110,7 +111,7 @@ class AnalyzeReceiptUseCaseTest {
         FakeFallbackGateway fallback = new FakeFallbackGateway();
         doReturn(List.of(handle(primary), handle(fallback))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
-        doReturn(new AnalyzeResponse(List.of("pan"), "sug2")).when(resultParser).parse("raw");
+        doReturn(new AnalyzeResponse(List.of("pan"), "sug2", 4)).when(resultParser).parse("raw");
 
         AnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
                 "LOSE", false, "", "NONE");
