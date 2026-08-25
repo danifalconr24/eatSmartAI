@@ -52,7 +52,13 @@ public class AnalysisResultParser {
         if (suggestions.isBlank()) {
             throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
         }
-        return new AnalyzeResponse(products, suggestions);
+        JsonNode scoreNode = result.path("score");
+        if (!scoreNode.isNumber()) {
+            LOG.warnf("El campo 'score' del proveedor no es un número: %s", text);
+            throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
+        }
+        int score = Math.clamp(scoreNode.intValue(), 0, 10);
+        return new AnalyzeResponse(products, suggestions, score);
     }
 
     private JsonNode parseJsonObject(String text) {

@@ -31,7 +31,8 @@ public class ReceiptPromptBuilder {
                 .append("Ignora líneas de precios sueltos, descuentos, programas de fidelidad, totales, IVA y fechas. ")
                 .append("Quédate solo con los nombres de los productos, normalizados en español ")
                 .append("(por ejemplo, \"L.ENTERA PASCUAL 1L\" → \"leche entera\").\n");
-        prompt.append("2. Analiza la compra según el perfil del usuario y genera sugerencias accionables en español.\n\n");
+        prompt.append("3. Asigna a la compra una puntuación de saludabilidad de 0 a 10, teniendo en cuenta ")
+                .append("el perfil del usuario (0 = muy poco saludable, 10 = excelente).\n\n");
         prompt.append("PERFIL DEL USUARIO:\n");
         prompt.append("- Objetivo: ").append(goalText).append('\n');
         prompt.append("- ¿Le importa el presupuesto?: ").append(budgetMatters ? "Sí" : "No").append('\n');
@@ -43,14 +44,19 @@ public class ReceiptPromptBuilder {
                 .append("ningún producto de origen animal.\n");
         prompt.append("- Referencia productos reales detectados en el ticket al proponer cambios.\n");
         prompt.append("- Tono cercano y práctico, en español de España.\n\n");
-        prompt.append("FORMATO DE RESPUESTA: responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:\n");
+        prompt.append("FORMATO DE RESPUESTA: responde ÚNICAMENTE con un objeto JSON válido. OBLIGATORIO:\n");
+        prompt.append("- Nada de texto antes o después del JSON. Sin bloques ``` ni explicaciones.\n");
+        prompt.append("- Comillas dobles siempre; sin comas finales; sin comentarios.\n");
+        prompt.append("- Dentro de \"suggestions\", escapa los saltos de línea como \\n.\n");
         prompt.append("{\n");
         prompt.append("  \"products\": [\"producto 1\", \"producto 2\"],\n");
+        prompt.append("  \"score\": 7,\n");
         prompt.append("  \"suggestions\": \"<markdown>\"\n");
         prompt.append("}\n\n");
+        prompt.append("- \"score\": número entero de 0 a 10.\n");
         prompt.append("El campo \"suggestions\" debe ser markdown con EXACTAMENTE estas secciones (con ##):\n");
         prompt.append("## Resumen general\n");
-        prompt.append("Breve valoración de la compra (saludabilidad, equilibrio).\n");
+        prompt.append("Valoración de la compra en 2-3 frases como máximo: breve y directa.\n");
         prompt.append("## Grupos de alimentos que faltan\n");
         prompt.append("Categorías ausentes o escasas (pescado, legumbres, fruta, verdura, cereales integrales, etc.).\n");
         prompt.append("## Mejoras en tu selección\n");

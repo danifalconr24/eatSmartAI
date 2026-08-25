@@ -97,6 +97,25 @@ class ReceiptPromptBuilderTest {
         String prompt = builder.build("LOSE", false, "", "NONE");
         assertThat(prompt).contains("\"products\"");
         assertThat(prompt).contains("\"suggestions\"");
+        assertThat(prompt).contains("\"score\"");
+    }
+
+    @Test
+    void build_definesScoreRange() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("número entero de 0 a 10");
+    }
+
+    @Test
+    void build_requiresShortSummary() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("2-3 frases como máximo");
+    }
+
+    @Test
+    void build_forbidsMarkdownFences() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("Sin bloques ```");
     }
 
     @Test

@@ -10,10 +10,17 @@ const String kBackendBaseUrl = String.fromEnvironment(
 );
 
 class AnalysisResult {
-  AnalysisResult({required this.products, required this.suggestions});
+  AnalysisResult({
+    required this.products,
+    required this.suggestions,
+    required this.score,
+  });
 
   final List<String> products;
   final String suggestions;
+
+  /// Puntuación de saludabilidad de la compra, de 0 a 10.
+  final int score;
 }
 
 class ApiException implements Exception {
@@ -62,6 +69,7 @@ class ApiClient {
             .map((e) => e.toString())
             .toList(),
         suggestions: data['suggestions']?.toString() ?? '',
+        score: (data['score'] as num?)?.round().clamp(0, 10) ?? 0,
       );
     } on DioException catch (e) {
       final serverMessage = e.response?.data is Map<String, dynamic>
