@@ -1,4 +1,4 @@
-# eatSmart App
+# eatSmartAI App
 
 Flutter mobile app that photographs Spanish supermarket receipts, sends them to the eatSmart backend for AI analysis, and displays personalized nutrition suggestions in Spanish.
 

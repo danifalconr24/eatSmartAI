@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.eatsmart" "\0"
-            VALUE "FileDescription", "eatsmart" "\0"
+            VALUE "CompanyName", "com.eatsmartai" "\0"
+            VALUE "FileDescription", "eatSmartAI" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "eatsmart" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.eatsmart. All rights reserved." "\0"
-            VALUE "OriginalFilename", "eatsmart.exe" "\0"
-            VALUE "ProductName", "eatsmart" "\0"
+            VALUE "InternalName", "eatsmart_ai" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.eatsmartai. All rights reserved." "\0"
+            VALUE "OriginalFilename", "eatsmart_ai.exe" "\0"
+            VALUE "ProductName", "eatSmartAI" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -4,16 +4,16 @@ import 'screens/scan_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const EatSmartApp());
+  runApp(const EatSmartAiApp());
 }
 
-class EatSmartApp extends StatelessWidget {
-  const EatSmartApp({super.key});
+class EatSmartAiApp extends StatelessWidget {
+  const EatSmartAiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'eatSmart',
+      title: 'eatSmartAI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Eatsmart</string>
+	<string>eatSmartAI</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>eatsmart</string>
+	<string>eatsmart_ai</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -50,9 +50,9 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>eatSmart necesita la cámara para fotografiar tus tickets de compra.</string>
+	<string>eatSmartAI necesita la cámara para fotografiar tus tickets de compra.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>eatSmart necesita acceso a tu galería para elegir una foto del ticket.</string>
+	<string>eatSmartAI necesita acceso a tu galería para elegir una foto del ticket.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

@@ -107,7 +107,7 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('eatSmart')),
+      appBar: AppBar(title: const Text('eatSmartAI')),
       body: Column(
         children: [
           Expanded(

@@ -81,7 +81,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('eatSmart')),
+      appBar: AppBar(title: const Text('eatSmartAI')),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

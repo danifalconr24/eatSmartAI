@@ -1,6 +1,6 @@
 {
-    "name": "eatsmart",
-    "short_name": "eatsmart",
+    "name": "eatSmartAI",
+    "short_name": "eatSmartAI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
