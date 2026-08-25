@@ -33,3 +33,10 @@ App (run from `app/`):
 ## Docs
 
 Detailed per-package docs: `README.md` (root), `backend/README.md`, `app/README.md`. Trust code/config over READMEs when they conflict.
+
+# IMPORTANT (FOLLOW FOR EVERY CHANGE REQUEST)!
+
+Before doing any change ask the user if wants apply the change in a new git worktree or wants to work directly in current branch.
+
+- if new worktree selected: 1º create a new worktree, after changes are done and validated create a new PR with the new changes
+- if work directly in the current branch selected: 1º apply changes, validate everything still compiles and tests runs and do not commit or push, leave changes in local.
