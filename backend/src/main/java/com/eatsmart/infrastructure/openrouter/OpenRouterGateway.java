@@ -54,7 +54,6 @@ public class OpenRouterGateway implements ReceiptAnalysisGateway {
     public String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException {
         String dataUrl = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
         OpenRouterChatRequest request = new OpenRouterChatRequest(
-                null,
                 models,
                 List.of(OpenRouterChatRequest.Message.user(List.of(
                         OpenRouterChatRequest.Content.image(dataUrl),

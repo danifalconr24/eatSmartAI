@@ -7,12 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Supports OpenRouter model routing: {@code models} is an ordered fallback
- * list (first available model wins), {@code model} pins a single model.
- * Exactly one of the two must be set.
+ * list (first available model wins).
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record OpenRouterChatRequest(String model, List<String> models, List<Message> messages,
-        Double temperature) {
+public record OpenRouterChatRequest(List<String> models, List<Message> messages, Double temperature) {
 
     public record Message(String role, List<Content> content) {
         public static Message user(List<Content> content) {
