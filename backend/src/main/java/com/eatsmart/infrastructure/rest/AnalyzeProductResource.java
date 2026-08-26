@@ -10,10 +10,10 @@ import org.jboss.resteasy.reactive.server.multipart.FileItem;
 import org.jboss.resteasy.reactive.server.multipart.FormValue;
 import org.jboss.resteasy.reactive.server.multipart.MultipartFormDataInput;
 
-import com.eatsmart.application.AnalyzeReceiptUseCase;
+import com.eatsmart.application.AnalyzeProductUseCase;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
-import com.eatsmart.domain.model.AnalyzeResponse;
+import com.eatsmart.domain.model.ProductAnalyzeResponse;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -23,25 +23,25 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/api/analyze")
+@Path("/api/analyze/product")
 @Produces(MediaType.APPLICATION_JSON)
-public class AnalyzeResource {
+public class AnalyzeProductResource {
 
-    private static final Logger LOG = Logger.getLogger(AnalyzeResource.class);
+    private static final Logger LOG = Logger.getLogger(AnalyzeProductResource.class);
 
     private static final Set<String> VALID_GOALS = Set.of("LOSE", "MAINTAIN", "GAIN");
     private static final Set<String> VALID_DIETS = Set.of("NONE", "VEGETARIAN", "VEGAN", "OTHER");
     private static final long MAX_IMAGE_BYTES = 10L * 1024 * 1024;
 
     @Inject
-    AnalyzeReceiptUseCase analyzeReceipt;
+    AnalyzeProductUseCase analyzeProduct;
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response analyze(MultipartFormDataInput input) {
         FileItem image = fileValue(input, "image");
         if (image == null) {
-            return badRequest("Falta la imagen del ticket. Envía una foto en el campo 'image'.");
+            return badRequest("Falta la imagen del producto. Envía una foto en el campo 'image'.");
         }
 
         String goal = textValue(input, "goal");
@@ -69,7 +69,7 @@ public class AnalyzeResource {
         }
 
         try {
-            AnalyzeResponse result = analyzeReceipt.analyze(
+            ProductAnalyzeResponse result = analyzeProduct.analyze(
                     imageBytes, "image/jpeg", goal, budgetMatters, allergies, diet);
             return Response.ok(result).build();
         } catch (UnreadableReceiptException e) {

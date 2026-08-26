@@ -7,8 +7,12 @@ import 'package:image_picker/image_picker.dart';
 import '../image_utils.dart';
 import 'form_screen.dart';
 
+enum ScanMode { ticket, product }
+
 class ScanScreen extends StatefulWidget {
-  const ScanScreen({super.key});
+  const ScanScreen({super.key, required this.mode});
+
+  final ScanMode mode;
 
   @override
   State<ScanScreen> createState() => _ScanScreenState();
@@ -18,6 +22,8 @@ class _ScanScreenState extends State<ScanScreen> {
   CameraController? _controller;
   bool _cameraReady = false;
   bool _busy = false;
+
+  bool get _isTicket => widget.mode == ScanMode.ticket;
 
   @override
   void initState() {
@@ -93,7 +99,12 @@ class _ScanScreenState extends State<ScanScreen> {
       final compressed = await downscaleImage(file);
       if (!mounted) return;
       await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => FormScreen(imageFile: compressed)),
+        MaterialPageRoute(
+          builder: (_) => FormScreen(
+            imageFile: compressed,
+            mode: widget.mode,
+          ),
+        ),
       );
     }
   }
@@ -113,11 +124,13 @@ class _ScanScreenState extends State<ScanScreen> {
           Expanded(
             child: _cameraReady
                 ? CameraPreview(_controller!)
-                : const Center(
+                : Center(
                     child: Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Cámara no disponible.\nPuedes elegir una foto del ticket desde la galería.',
+                        _isTicket
+                            ? 'Cámara no disponible.\nPuedes elegir una foto del ticket desde la galería.'
+                            : 'Cámara no disponible.\nPuedes elegir una foto del producto desde la galería.',
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -141,7 +154,9 @@ class _ScanScreenState extends State<ScanScreen> {
                     child: FilledButton.icon(
                       onPressed: (_cameraReady && !_busy) ? _takePhoto : null,
                       icon: const Icon(Icons.camera_alt),
-                      label: const Text('Fotografiar ticket'),
+                      label: Text(
+                        _isTicket ? 'Fotografiar ticket' : 'Fotografiar producto',
+                      ),
                     ),
                   ),
                 ],

@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'analysis_screen.dart';
+import 'product_analysis_screen.dart';
+import 'scan_screen.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({super.key, required this.imageFile});
+  const FormScreen({super.key, required this.imageFile, required this.mode});
 
   final File imageFile;
+  final ScanMode mode;
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -19,6 +22,8 @@ class _FormScreenState extends State<FormScreen> {
   String _dietPreference = 'NONE';
   final TextEditingController _allergiesController = TextEditingController();
 
+  bool get _isTicket => widget.mode == ScanMode.ticket;
+
   @override
   void dispose() {
     _allergiesController.dispose();
@@ -26,17 +31,31 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   void _submit() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AnalysisScreen(
-          imageFile: widget.imageFile,
-          goal: _goal,
-          budgetMatters: _budgetMatters,
-          allergies: _allergiesController.text.trim(),
-          dietPreference: _dietPreference,
+    if (_isTicket) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => AnalysisScreen(
+            imageFile: widget.imageFile,
+            goal: _goal,
+            budgetMatters: _budgetMatters,
+            allergies: _allergiesController.text.trim(),
+            dietPreference: _dietPreference,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ProductAnalysisScreen(
+            imageFile: widget.imageFile,
+            goal: _goal,
+            budgetMatters: _budgetMatters,
+            allergies: _allergiesController.text.trim(),
+            dietPreference: _dietPreference,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -94,7 +113,7 @@ class _FormScreenState extends State<FormScreen> {
           FilledButton.icon(
             onPressed: _submit,
             icon: const Icon(Icons.analytics),
-            label: const Text('Analizar ticket'),
+            label: Text(_isTicket ? 'Analizar ticket' : 'Analizar producto'),
           ),
         ],
       ),
