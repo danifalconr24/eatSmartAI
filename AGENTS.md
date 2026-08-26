@@ -20,7 +20,7 @@ App (run from `app/`):
 - **Two AI providers, chained by `@Priority`**: OpenRouter (`@Priority(1)`, primary) → Gemini (`@Priority(2)`, fallback). Failover happens in `AnalyzeReceiptUseCase`: technical failures fall through to next enabled gateway; a valid "unreadable receipt" answer is never retried.
 - Provider is "enabled" iff its API key env var is set: `OPENROUTER_API_KEY` (primary), `GEMINI_API_KEY` (fallback). Both optional individually, but at least one required.
 - `.env`: copy `.env.example` → `.env` in `backend/`. Quarkus dev loads it; keys must never be committed or shipped to the app.
-- Root README says Gemini-only and `gemini-2.5-flash` — **stale**. Actual config: `openrouter.model=openrouter/free`, `gemini.model=gemini-3.6-flash` in `application.properties`.
+- Root README says Gemini-only and `gemini-2.5-flash` — **stale**. Actual config: `openrouter.models` (ordered fallback list of free vision models; do NOT use `openrouter/free` router — it can pick non-vision models) and `gemini.model=gemini-3.6-flash` in `application.properties`.
 
 ## Conventions / gotchas
 
