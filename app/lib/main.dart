@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/scan_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +19,7 @@ class EatSmartAiApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const ScanScreen(),
+      home: const HomeScreen(),
     );
   }
 }
