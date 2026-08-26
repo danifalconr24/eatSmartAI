@@ -18,8 +18,11 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 
 /**
- * Primary provider: OpenRouter free models router (openrouter/free).
- * OpenAI-compatible chat completions API.
+ * Primary provider: OpenRouter.
+ * OpenAI-compatible chat completions API. Sends an ordered fallback list of
+ * vision-capable models ({@code openrouter.models}); without it, model routers
+ * such as openrouter/free can route to non-vision models (e.g. content-safety
+ * classifiers) that return unusable answers.
  */
 @ApplicationScoped
 @Priority(1)
@@ -31,8 +34,8 @@ public class OpenRouterGateway implements ReceiptAnalysisGateway {
     @ConfigProperty(name = "openrouter.api.key")
     String apiKey;
 
-    @ConfigProperty(name = "openrouter.model", defaultValue = "openrouter/free")
-    String model;
+    @ConfigProperty(name = "openrouter.models")
+    List<String> models;
 
     @RestClient
     OpenRouterClient client;
@@ -51,7 +54,7 @@ public class OpenRouterGateway implements ReceiptAnalysisGateway {
     public String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException {
         String dataUrl = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
         OpenRouterChatRequest request = new OpenRouterChatRequest(
-                model,
+                models,
                 List.of(OpenRouterChatRequest.Message.user(List.of(
                         OpenRouterChatRequest.Content.image(dataUrl),
                         OpenRouterChatRequest.Content.text(prompt)))),
