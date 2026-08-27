@@ -24,4 +24,15 @@ public interface ReceiptAnalysisGateway {
      * @throws AnalysisException on transport errors, provider errors or empty/unusable responses
      */
     String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException;
+
+    /**
+     * Sends a text-only prompt (no image) to the provider. Used by features
+     * that build on an already-scanned result, e.g. shopping list generation.
+     *
+     * @return raw text content returned by the model
+     * @throws AnalysisException on transport errors, provider errors or empty/unusable responses
+     */
+    default String generateText(String prompt) throws AnalysisException {
+        throw new AnalysisException(name() + " no admite peticiones sin imagen.", null);
+    }
 }

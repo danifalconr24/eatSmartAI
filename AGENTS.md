@@ -21,6 +21,7 @@ App (run from `app/`):
 - **Two independent scan features**, each with its own use case, prompt builder, result parser, and REST endpoint:
   - **Ticket scan**: `POST /api/analyze` → `AnalyzeReceiptUseCase` → returns `{products, suggestions, score}`
   - **Product scan**: `POST /api/analyze/product` → `AnalyzeProductUseCase` → returns `{product, score, nutrition, alternative}`. Alternative is only included when score < 7.
+- **Shopping list generation**: `POST /api/shopping-lists/generate` (JSON body, no image) → `GenerateShoppingListUseCase` → returns `{categories: [{name, items: [{name, type, replaces, reason}]}]}`. Uses `ReceiptAnalysisGateway.generateText(prompt)` (text-only port method). Categories are fixed in `ShoppingListCategory.ALLOWED_NAMES`; the parser rejects unknown categories, duplicates and invalid REPLACE items. App persists lists locally via `shared_preferences` (`app/lib/data/shopping_list_repository.dart`); backend stays stateless.
 - Provider is "enabled" iff its API key env var is set: `OPENROUTER_API_KEY` (primary), `GEMINI_API_KEY` (fallback). Both optional individually, but at least one required.
 - `.env`: copy `.env.example` → `.env` in `backend/`. Quarkus dev loads it; keys must never be committed or shipped to the app.
 - Root README says Gemini-only and `gemini-2.5-flash` — **stale**. Actual config: `openrouter.models` (ordered fallback list of free vision models; do NOT use `openrouter/free` router — it can pick non-vision models) and `gemini.model=gemini-3.6-flash` in `application.properties`.

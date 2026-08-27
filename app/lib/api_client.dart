@@ -53,6 +53,30 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+class ShoppingListItemResult {
+  ShoppingListItemResult({
+    required this.name,
+    required this.category,
+    required this.type,
+    this.replaces,
+    this.reason,
+  });
+
+  final String name;
+  final String category;
+
+  /// KEEP, REPLACE o ADD (tal como los emite el backend).
+  final String type;
+  final String? replaces;
+  final String? reason;
+}
+
+class ShoppingListResult {
+  ShoppingListResult({required this.items});
+
+  final List<ShoppingListItemResult> items;
+}
+
 class ApiClient {
   ApiClient()
       : _dio = Dio(BaseOptions(
@@ -137,6 +161,55 @@ class ApiClient {
               )
             : null,
       );
+    } on DioException catch (e) {
+      final serverMessage = _extractErrorMessage(e);
+      if (serverMessage != null) throw ApiException(serverMessage);
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout) {
+        throw ApiException(
+            'No se pudo conectar con el servidor. Comprueba que el backend está en marcha.');
+      }
+      throw ApiException('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+    }
+  }
+
+  Future<ShoppingListResult> generateShoppingList({
+    required List<String> products,
+    required String suggestions,
+    required String goal,
+    required bool budgetMatters,
+    required String allergies,
+    required String dietPreference,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/shopping-lists/generate',
+        data: {
+          'products': products,
+          'suggestions': suggestions,
+          'goal': goal,
+          'dietPreference': dietPreference,
+          'budgetMatters': budgetMatters,
+          'allergies': allergies,
+        },
+      );
+      final data = response.data ?? {};
+      final categories = data['categories'] as List<dynamic>? ?? [];
+      final items = <ShoppingListItemResult>[];
+      for (final category in categories.whereType<Map<String, dynamic>>()) {
+        final categoryName = category['name']?.toString() ?? 'Otros';
+        final categoryItems = category['items'] as List<dynamic>? ?? [];
+        for (final item in categoryItems.whereType<Map<String, dynamic>>()) {
+          items.add(ShoppingListItemResult(
+            name: item['name']?.toString() ?? '',
+            category: categoryName,
+            type: item['type']?.toString() ?? 'KEEP',
+            replaces: item['replaces']?.toString(),
+            reason: item['reason']?.toString(),
+          ));
+        }
+      }
+      return ShoppingListResult(items: items);
     } on DioException catch (e) {
       final serverMessage = _extractErrorMessage(e);
       if (serverMessage != null) throw ApiException(serverMessage);

@@ -51,6 +51,16 @@ public class OpenRouterGateway implements ReceiptAnalysisGateway {
     }
 
     @Override
+    public String generateText(String prompt) throws AnalysisException {
+        OpenRouterChatRequest request = new OpenRouterChatRequest(
+                models,
+                List.of(OpenRouterChatRequest.Message.user(List.of(
+                        OpenRouterChatRequest.Content.text(prompt)))),
+                TEMPERATURE);
+        return call(request);
+    }
+
+    @Override
     public String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException {
         String dataUrl = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
         OpenRouterChatRequest request = new OpenRouterChatRequest(
@@ -59,7 +69,10 @@ public class OpenRouterGateway implements ReceiptAnalysisGateway {
                         OpenRouterChatRequest.Content.image(dataUrl),
                         OpenRouterChatRequest.Content.text(prompt)))),
                 TEMPERATURE);
+        return call(request);
+    }
 
+    private String call(OpenRouterChatRequest request) throws AnalysisException {
         OpenRouterChatResponse response;
         try {
             response = client.chat(request);

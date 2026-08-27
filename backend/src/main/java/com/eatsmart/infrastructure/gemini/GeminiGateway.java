@@ -47,13 +47,25 @@ public class GeminiGateway implements ReceiptAnalysisGateway {
     }
 
     @Override
+    public String generateText(String prompt) throws AnalysisException {
+        GeminiGenerateRequest request = new GeminiGenerateRequest(
+                List.of(new GeminiGenerateRequest.Content(List.of(
+                        GeminiGenerateRequest.Part.text(prompt)))),
+                new GeminiGenerateRequest.GenerationConfig("application/json", TEMPERATURE));
+        return call(request);
+    }
+
+    @Override
     public String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException {
         GeminiGenerateRequest request = new GeminiGenerateRequest(
                 List.of(new GeminiGenerateRequest.Content(List.of(
                         GeminiGenerateRequest.Part.image(mimeType, Base64.getEncoder().encodeToString(imageBytes)),
                         GeminiGenerateRequest.Part.text(prompt)))),
                 new GeminiGenerateRequest.GenerationConfig("application/json", TEMPERATURE));
+        return call(request);
+    }
 
+    private String call(GeminiGenerateRequest request) throws AnalysisException {
         GeminiGenerateResponse response;
         try {
             response = client.generate(model, request);
