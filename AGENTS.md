@@ -39,4 +39,4 @@ App (run from `app/`):
 
 Detailed per-package docs: `README.md` (root), `backend/README.md`, `app/README.md`. Trust code/config over READMEs when they conflict.
 
-# IMPORTANT: If you find errors related to files not found in the current working project directory (example: .env file), look for them in ~/Projects/eatSmartAI directory.
+# IMPORTANT: as we are sometimes working on worktrees, check before doing any change in backend if there is a valid .env file on current directory, if not do a "cp ~/Projects/eatSmartAI/backend/.env ."
