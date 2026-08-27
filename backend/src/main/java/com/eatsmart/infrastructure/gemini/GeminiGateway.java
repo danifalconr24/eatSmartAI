@@ -7,14 +7,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import com.eatsmart.application.port.ProductAnalysisGateway;
+import com.eatsmart.application.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ShoppingListGenerationGateway;
 import com.eatsmart.domain.exception.AnalysisException;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
 import com.eatsmart.infrastructure.gemini.dto.GeminiGenerateRequest;
 import com.eatsmart.infrastructure.gemini.dto.GeminiGenerateResponse;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 
 /**
@@ -22,7 +23,8 @@ import jakarta.ws.rs.WebApplicationException;
  */
 @ApplicationScoped
 @Priority(2)
-public class GeminiGateway implements ReceiptAnalysisGateway {
+public class GeminiGateway
+        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway {
 
     private static final Logger LOG = Logger.getLogger(GeminiGateway.class);
     private static final double TEMPERATURE = 0.3;

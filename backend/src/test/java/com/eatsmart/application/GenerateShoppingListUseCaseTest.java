@@ -24,7 +24,7 @@ import com.eatsmart.domain.model.ShoppingList;
 import com.eatsmart.domain.model.ShoppingListCategory;
 import com.eatsmart.domain.model.ShoppingListItem;
 import com.eatsmart.domain.model.ShoppingListItemType;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ShoppingListGenerationGateway;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -39,38 +39,34 @@ class GenerateShoppingListUseCaseTest {
     ShoppingListResultParser resultParser;
 
     @Mock
-    Instance<ReceiptAnalysisGateway> gatewaysInstance;
+    Instance<ShoppingListGenerationGateway> gatewaysInstance;
 
     @InjectMocks
     GenerateShoppingListUseCase useCase;
 
     @Priority(1)
-    static class FakePrimaryGateway implements ReceiptAnalysisGateway {
+    static class FakePrimaryGateway implements ShoppingListGenerationGateway {
         String rawResponse = "raw";
         boolean enabled = true;
         @Override public String name() { return "OpenRouter"; }
         @Override public boolean isEnabled() { return enabled; }
-        @Override public String analyze(byte[] imageBytes, String mimeType, String prompt)
-                throws AnalysisException { return rawResponse; }
         @Override public String generateText(String prompt) throws AnalysisException { return rawResponse; }
     }
 
     @Priority(2)
-    static class FakeFallbackGateway implements ReceiptAnalysisGateway {
+    static class FakeFallbackGateway implements ShoppingListGenerationGateway {
         String rawResponse = "raw";
         boolean enabled = true;
         @Override public String name() { return "Gemini"; }
         @Override public boolean isEnabled() { return enabled; }
-        @Override public String analyze(byte[] imageBytes, String mimeType, String prompt)
-                throws AnalysisException { return rawResponse; }
         @Override public String generateText(String prompt) throws AnalysisException { return rawResponse; }
     }
 
     @SuppressWarnings("unchecked")
-    private Instance.Handle<ReceiptAnalysisGateway> handle(ReceiptAnalysisGateway gw) {
-        Instance.Handle<ReceiptAnalysisGateway> h =
+    private Instance.Handle<ShoppingListGenerationGateway> handle(ShoppingListGenerationGateway gw) {
+        Instance.Handle<ShoppingListGenerationGateway> h =
                 org.mockito.Mockito.mock(Instance.Handle.class);
-        Bean<ReceiptAnalysisGateway> bean =
+        Bean<ShoppingListGenerationGateway> bean =
                 org.mockito.Mockito.mock(Bean.class);
         doReturn(bean).when(h).getBean();
         doReturn((Class) gw.getClass()).when(bean).getBeanClass();

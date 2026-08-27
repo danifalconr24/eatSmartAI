@@ -22,7 +22,7 @@ import org.mockito.quality.Strictness;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.AnalyzeResponse;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ReceiptAnalysisGateway;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

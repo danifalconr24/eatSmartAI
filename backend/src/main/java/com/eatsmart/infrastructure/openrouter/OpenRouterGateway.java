@@ -7,14 +7,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import com.eatsmart.application.port.ProductAnalysisGateway;
+import com.eatsmart.application.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ShoppingListGenerationGateway;
 import com.eatsmart.domain.exception.AnalysisException;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
 import com.eatsmart.infrastructure.openrouter.dto.OpenRouterChatRequest;
 import com.eatsmart.infrastructure.openrouter.dto.OpenRouterChatResponse;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 
 /**
@@ -26,7 +27,8 @@ import jakarta.ws.rs.WebApplicationException;
  */
 @ApplicationScoped
 @Priority(1)
-public class OpenRouterGateway implements ReceiptAnalysisGateway {
+public class OpenRouterGateway
+        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway {
 
     private static final Logger LOG = Logger.getLogger(OpenRouterGateway.class);
     private static final double TEMPERATURE = 0.3;

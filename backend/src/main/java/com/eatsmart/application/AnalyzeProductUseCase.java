@@ -10,7 +10,7 @@ import org.jboss.logging.Logger;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.ProductAnalyzeResponse;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ProductAnalysisGateway;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -20,8 +20,8 @@ import jakarta.inject.Inject;
 /**
  * Use case: analyze a single supermarket product photo.
  *
- * Orchestrates the configured {@link ReceiptAnalysisGateway} providers in
- * {@link Priority} order, same failover strategy as
+     * Orchestrates the configured {@link ProductAnalysisGateway} providers in
+     * {@link Priority} order, same failover strategy as
  * {@link AnalyzeReceiptUseCase}: technical failures fall through to the next
  * enabled provider; a valid business answer ("not a recognizable product")
  * is never retried.
@@ -43,7 +43,7 @@ public class AnalyzeProductUseCase {
     ProductResultParser resultParser;
 
     @Inject
-    Instance<ReceiptAnalysisGateway> gateways;
+    Instance<ProductAnalysisGateway> gateways;
 
     public ProductAnalyzeResponse analyze(byte[] imageBytes, String mimeType,
             String goal, boolean budgetMatters, String allergies, String dietPreference)
@@ -53,7 +53,7 @@ public class AnalyzeProductUseCase {
 
         boolean anyEnabled = false;
         AnalysisException lastError = null;
-        for (ReceiptAnalysisGateway gateway : gatewayByPriority()) {
+        for (ProductAnalysisGateway gateway : gatewayByPriority()) {
             if (!gateway.isEnabled()) {
                 LOG.debugf("Proveedor %s deshabilitado (sin configurar), se omite", gateway.name());
                 continue;
@@ -85,14 +85,14 @@ public class AnalyzeProductUseCase {
         return response;
     }
 
-    private List<ReceiptAnalysisGateway> gatewayByPriority() {
-        List<Instance.Handle<ReceiptAnalysisGateway>> handles = new ArrayList<>();
+    private List<ProductAnalysisGateway> gatewayByPriority() {
+        List<Instance.Handle<ProductAnalysisGateway>> handles = new ArrayList<>();
         gateways.handles().forEach(handles::add);
         handles.sort(Comparator.comparingInt(AnalyzeProductUseCase::priorityOf));
         return handles.stream().map(Instance.Handle::get).toList();
     }
 
-    private static int priorityOf(Instance.Handle<ReceiptAnalysisGateway> handle) {
+    private static int priorityOf(Instance.Handle<ProductAnalysisGateway> handle) {
         return Optional.ofNullable(handle.getBean().getBeanClass().getAnnotation(Priority.class))
                 .map(Priority::value)
                 .orElse(Integer.MAX_VALUE);

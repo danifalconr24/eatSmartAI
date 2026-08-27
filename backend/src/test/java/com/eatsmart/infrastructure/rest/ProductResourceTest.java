@@ -18,7 +18,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-class AnalyzeProductResourceTest {
+class ProductResourceTest {
 
     @InjectMock
     AnalyzeProductUseCase analyzeProduct;

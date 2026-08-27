@@ -7,6 +7,9 @@ import com.eatsmart.application.GenerateShoppingListUseCase;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.model.ShoppingList;
 
+import com.eatsmart.infrastructure.rest.dto.ErrorResponse;
+import com.eatsmart.infrastructure.rest.dto.GenerateShoppingListRequest;
+import com.eatsmart.infrastructure.rest.dto.GenerateShoppingListResponse;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;

@@ -9,7 +9,7 @@ import org.jboss.logging.Logger;
 
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.model.ShoppingList;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ShoppingListGenerationGateway;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,9 +22,9 @@ import jakarta.inject.Inject;
  *
  * Same orchestration as {@link AnalyzeReceiptUseCase}: gateways are tried in
  * {@link Priority} order, disabled providers are skipped and technical
- * failures ({@link AnalysisException}) fall back to the next one. There is no
- * image involved, so the text-only {@link ReceiptAnalysisGateway#generateText}
- * port method is used.
+     * failures ({@link AnalysisException}) fall back to the next one. There is no
+     * image involved, so the text-only {@link ShoppingListGenerationGateway#generateText}
+     * port method is used.
  */
 @ApplicationScoped
 public class GenerateShoppingListUseCase {
@@ -38,7 +38,7 @@ public class GenerateShoppingListUseCase {
     ShoppingListResultParser resultParser;
 
     @Inject
-    Instance<ReceiptAnalysisGateway> gateways;
+    Instance<ShoppingListGenerationGateway> gateways;
 
     public ShoppingList generate(List<String> products, String suggestions, String goal,
             boolean budgetMatters, String allergies, String dietPreference) throws AnalysisException {
@@ -47,7 +47,7 @@ public class GenerateShoppingListUseCase {
 
         boolean anyEnabled = false;
         AnalysisException lastError = null;
-        for (ReceiptAnalysisGateway gateway : gatewayByPriority()) {
+        for (ShoppingListGenerationGateway gateway : gatewayByPriority()) {
             if (!gateway.isEnabled()) {
                 LOG.debugf("Proveedor %s deshabilitado (sin configurar), se omite", gateway.name());
                 continue;
@@ -70,14 +70,14 @@ public class GenerateShoppingListUseCase {
         throw lastError;
     }
 
-    private List<ReceiptAnalysisGateway> gatewayByPriority() {
-        List<Instance.Handle<ReceiptAnalysisGateway>> handles = new ArrayList<>();
+    private List<ShoppingListGenerationGateway> gatewayByPriority() {
+        List<Instance.Handle<ShoppingListGenerationGateway>> handles = new ArrayList<>();
         gateways.handles().forEach(handles::add);
         handles.sort(Comparator.comparingInt(GenerateShoppingListUseCase::priorityOf));
         return handles.stream().map(Instance.Handle::get).toList();
     }
 
-    private static int priorityOf(Instance.Handle<ReceiptAnalysisGateway> handle) {
+    private static int priorityOf(Instance.Handle<ShoppingListGenerationGateway> handle) {
         return Optional.ofNullable(handle.getBean().getBeanClass().getAnnotation(Priority.class))
                 .map(Priority::value)
                 .orElse(Integer.MAX_VALUE);
