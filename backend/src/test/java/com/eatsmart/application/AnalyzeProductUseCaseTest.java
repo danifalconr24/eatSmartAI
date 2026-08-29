@@ -22,7 +22,7 @@ import org.mockito.quality.Strictness;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.ProductAnalyzeResponse;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ProductAnalysisGateway;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -35,13 +35,13 @@ class AnalyzeProductUseCaseTest {
     ProductResultParser resultParser;
 
     @Mock
-    Instance<ReceiptAnalysisGateway> gatewaysInstance;
+    Instance<ProductAnalysisGateway> gatewaysInstance;
 
     @InjectMocks
     AnalyzeProductUseCase useCase;
 
     @Priority(1)
-    static class FakePrimaryGateway implements ReceiptAnalysisGateway {
+    static class FakePrimaryGateway implements ProductAnalysisGateway {
         String rawResponse = "raw";
         boolean enabled = true;
         @Override public String name() { return "OpenRouter"; }
@@ -51,7 +51,7 @@ class AnalyzeProductUseCaseTest {
     }
 
     @Priority(2)
-    static class FakeFallbackGateway implements ReceiptAnalysisGateway {
+    static class FakeFallbackGateway implements ProductAnalysisGateway {
         String rawResponse = "raw";
         boolean enabled = true;
         @Override public String name() { return "Gemini"; }
@@ -61,10 +61,10 @@ class AnalyzeProductUseCaseTest {
     }
 
     @SuppressWarnings("unchecked")
-    private Instance.Handle<ReceiptAnalysisGateway> handle(ReceiptAnalysisGateway gw) {
-        Instance.Handle<ReceiptAnalysisGateway> h =
+    private Instance.Handle<ProductAnalysisGateway> handle(ProductAnalysisGateway gw) {
+        Instance.Handle<ProductAnalysisGateway> h =
                 org.mockito.Mockito.mock(Instance.Handle.class);
-        Bean<ReceiptAnalysisGateway> bean =
+        Bean<ProductAnalysisGateway> bean =
                 org.mockito.Mockito.mock(Bean.class);
         doReturn(bean).when(h).getBean();
         doReturn((Class) gw.getClass()).when(bean).getBeanClass();

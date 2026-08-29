@@ -7,14 +7,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import com.eatsmart.application.port.ProductAnalysisGateway;
+import com.eatsmart.application.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ShoppingListGenerationGateway;
 import com.eatsmart.domain.exception.AnalysisException;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
 import com.eatsmart.infrastructure.gemini.dto.GeminiGenerateRequest;
 import com.eatsmart.infrastructure.gemini.dto.GeminiGenerateResponse;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 
 /**
@@ -22,7 +23,8 @@ import jakarta.ws.rs.WebApplicationException;
  */
 @ApplicationScoped
 @Priority(2)
-public class GeminiGateway implements ReceiptAnalysisGateway {
+public class GeminiGateway
+        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway {
 
     private static final Logger LOG = Logger.getLogger(GeminiGateway.class);
     private static final double TEMPERATURE = 0.3;
@@ -47,13 +49,25 @@ public class GeminiGateway implements ReceiptAnalysisGateway {
     }
 
     @Override
+    public String generateText(String prompt) throws AnalysisException {
+        GeminiGenerateRequest request = new GeminiGenerateRequest(
+                List.of(new GeminiGenerateRequest.Content(List.of(
+                        GeminiGenerateRequest.Part.text(prompt)))),
+                new GeminiGenerateRequest.GenerationConfig("application/json", TEMPERATURE));
+        return call(request);
+    }
+
+    @Override
     public String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException {
         GeminiGenerateRequest request = new GeminiGenerateRequest(
                 List.of(new GeminiGenerateRequest.Content(List.of(
                         GeminiGenerateRequest.Part.image(mimeType, Base64.getEncoder().encodeToString(imageBytes)),
                         GeminiGenerateRequest.Part.text(prompt)))),
                 new GeminiGenerateRequest.GenerationConfig("application/json", TEMPERATURE));
+        return call(request);
+    }
 
+    private String call(GeminiGenerateRequest request) throws AnalysisException {
         GeminiGenerateResponse response;
         try {
             response = client.generate(model, request);

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Set;
 
+import com.eatsmart.infrastructure.rest.dto.ErrorResponse;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.server.multipart.FileItem;
 import org.jboss.resteasy.reactive.server.multipart.FormValue;
@@ -25,9 +26,9 @@ import jakarta.ws.rs.core.Response;
 
 @Path("/api/analyze/product")
 @Produces(MediaType.APPLICATION_JSON)
-public class AnalyzeProductResource {
+public class ProductResource {
 
-    private static final Logger LOG = Logger.getLogger(AnalyzeProductResource.class);
+    private static final Logger LOG = Logger.getLogger(ProductResource.class);
 
     private static final Set<String> VALID_GOALS = Set.of("LOSE", "MAINTAIN", "GAIN");
     private static final Set<String> VALID_DIETS = Set.of("NONE", "VEGETARIAN", "VEGAN", "OTHER");

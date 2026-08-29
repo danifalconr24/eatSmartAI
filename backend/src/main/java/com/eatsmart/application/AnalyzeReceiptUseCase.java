@@ -10,7 +10,7 @@ import org.jboss.logging.Logger;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.AnalyzeResponse;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ReceiptAnalysisGateway;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;

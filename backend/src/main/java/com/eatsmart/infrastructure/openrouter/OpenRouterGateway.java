@@ -7,14 +7,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import com.eatsmart.application.port.ProductAnalysisGateway;
+import com.eatsmart.application.port.ReceiptAnalysisGateway;
+import com.eatsmart.application.port.ShoppingListGenerationGateway;
 import com.eatsmart.domain.exception.AnalysisException;
-import com.eatsmart.domain.port.ReceiptAnalysisGateway;
 import com.eatsmart.infrastructure.openrouter.dto.OpenRouterChatRequest;
 import com.eatsmart.infrastructure.openrouter.dto.OpenRouterChatResponse;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 
 /**
@@ -26,7 +27,8 @@ import jakarta.ws.rs.WebApplicationException;
  */
 @ApplicationScoped
 @Priority(1)
-public class OpenRouterGateway implements ReceiptAnalysisGateway {
+public class OpenRouterGateway
+        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway {
 
     private static final Logger LOG = Logger.getLogger(OpenRouterGateway.class);
     private static final double TEMPERATURE = 0.3;
@@ -51,6 +53,16 @@ public class OpenRouterGateway implements ReceiptAnalysisGateway {
     }
 
     @Override
+    public String generateText(String prompt) throws AnalysisException {
+        OpenRouterChatRequest request = new OpenRouterChatRequest(
+                models,
+                List.of(OpenRouterChatRequest.Message.user(List.of(
+                        OpenRouterChatRequest.Content.text(prompt)))),
+                TEMPERATURE);
+        return call(request);
+    }
+
+    @Override
     public String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException {
         String dataUrl = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
         OpenRouterChatRequest request = new OpenRouterChatRequest(
@@ -59,7 +71,10 @@ public class OpenRouterGateway implements ReceiptAnalysisGateway {
                         OpenRouterChatRequest.Content.image(dataUrl),
                         OpenRouterChatRequest.Content.text(prompt)))),
                 TEMPERATURE);
+        return call(request);
+    }
 
+    private String call(OpenRouterChatRequest request) throws AnalysisException {
         OpenRouterChatResponse response;
         try {
             response = client.chat(request);

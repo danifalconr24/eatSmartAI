@@ -61,8 +61,8 @@ class ArchitectureTest {
                     .allowEmptyShould(true);
 
     @ArchTest
-    static final ArchRule domain_port_interfaces_have_noImplementationDependencies =
-            classes().that().resideInAPackage("com.eatsmart.domain.port..")
+    static final ArchRule application_port_interfaces_have_noImplementationDependencies =
+            classes().that().resideInAPackage("com.eatsmart.application.port..")
                     .should().onlyDependOnClassesThat()
                     .resideInAnyPackage("com.eatsmart.domain..", "java..", "jakarta..")
                     .allowEmptyShould(true);
@@ -82,15 +82,19 @@ class ArchitectureTest {
                     .allowEmptyShould(true);
 
     @ArchTest
-    static final ArchRule gemini_gateway_implements_receipt_analysis_gateway =
+    static final ArchRule gemini_gateway_implements_all_analysis_gateway_ports =
             classes().that().haveSimpleName("GeminiGateway")
-                    .should().implement("com.eatsmart.domain.port.ReceiptAnalysisGateway")
+                    .should().implement("com.eatsmart.application.port.ReceiptAnalysisGateway")
+                    .andShould().implement("com.eatsmart.application.port.ProductAnalysisGateway")
+                    .andShould().implement("com.eatsmart.application.port.ShoppingListGenerationGateway")
                     .allowEmptyShould(true);
 
     @ArchTest
-    static final ArchRule openrouter_gateway_implements_receipt_analysis_gateway =
+    static final ArchRule openrouter_gateway_implements_all_analysis_gateway_ports =
             classes().that().haveSimpleName("OpenRouterGateway")
-                    .should().implement("com.eatsmart.domain.port.ReceiptAnalysisGateway")
+                    .should().implement("com.eatsmart.application.port.ReceiptAnalysisGateway")
+                    .andShould().implement("com.eatsmart.application.port.ProductAnalysisGateway")
+                    .andShould().implement("com.eatsmart.application.port.ShoppingListGenerationGateway")
                     .allowEmptyShould(true);
 
     @ArchTest

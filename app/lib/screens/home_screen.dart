@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'scan_screen.dart';
+import 'shopping_lists_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -39,6 +40,17 @@ class HomeScreen extends StatelessWidget {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const ScanScreen(mode: ScanMode.product),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _ScanOptionCard(
+                icon: Icons.shopping_cart_outlined,
+                title: 'Listas de compra',
+                subtitle: 'Consulta tus listas de la compra sugeridas',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ShoppingListsScreen(),
                   ),
                 ),
               ),
