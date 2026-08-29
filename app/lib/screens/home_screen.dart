@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/bottom_banner_ad.dart';
 import 'scan_screen.dart';
 import 'shopping_lists_screen.dart';
 
@@ -11,6 +12,7 @@ class HomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('eatSmartAI')),
+      bottomNavigationBar: const BottomBannerAd(),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

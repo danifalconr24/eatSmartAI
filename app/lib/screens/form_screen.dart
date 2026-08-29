@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../ads/ad_service.dart';
 import 'analysis_screen.dart';
 import 'product_analysis_screen.dart';
 import 'scan_screen.dart';
@@ -30,31 +31,49 @@ class _FormScreenState extends State<FormScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_isTicket) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => AnalysisScreen(
-            imageFile: widget.imageFile,
-            goal: _goal,
-            budgetMatters: _budgetMatters,
-            allergies: _allergiesController.text.trim(),
-            dietPreference: _dietPreference,
+  bool _showingAd = false;
+
+  Future<void> _submit() async {
+    if (_showingAd) return;
+    setState(() => _showingAd = true);
+    try {
+      final earned = await AdService.instance.showRewarded();
+      if (!mounted) return;
+      if (!earned) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Mira el vídeo completo para continuar con el análisis'),
           ),
-        ),
-      );
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ProductAnalysisScreen(
-            imageFile: widget.imageFile,
-            goal: _goal,
-            budgetMatters: _budgetMatters,
-            allergies: _allergiesController.text.trim(),
-            dietPreference: _dietPreference,
+        );
+        return;
+      }
+      if (_isTicket) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => AnalysisScreen(
+              imageFile: widget.imageFile,
+              goal: _goal,
+              budgetMatters: _budgetMatters,
+              allergies: _allergiesController.text.trim(),
+              dietPreference: _dietPreference,
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ProductAnalysisScreen(
+              imageFile: widget.imageFile,
+              goal: _goal,
+              budgetMatters: _budgetMatters,
+              allergies: _allergiesController.text.trim(),
+              dietPreference: _dietPreference,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _showingAd = false);
     }
   }
 
@@ -111,8 +130,14 @@ class _FormScreenState extends State<FormScreen> {
           ),
           const SizedBox(height: 32),
           FilledButton.icon(
-            onPressed: _submit,
-            icon: const Icon(Icons.analytics),
+            onPressed: _showingAd ? null : _submit,
+            icon: _showingAd
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.analytics),
             label: Text(_isTicket ? 'Analizar ticket' : 'Analizar producto'),
           ),
         ],

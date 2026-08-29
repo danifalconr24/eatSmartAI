@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'ads/ad_service.dart';
 import 'screens/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  AdService.instance.initialize();
   runApp(const EatSmartAiApp());
 }
 
