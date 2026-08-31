@@ -48,6 +48,11 @@ public class AnalysisResultParser {
             LOG.warnf("El campo 'products' del proveedor no es una lista válida: %s", text);
             throw new AnalysisException("El proveedor devolvió una respuesta no interpretable.", e);
         }
+        if (products == null || products.isEmpty()) {
+            LOG.infof("El proveedor no detectó productos ni rechazó la imagen: %s", text);
+            throw new UnreadableReceiptException(
+                    "No se detecta un ticket de supermercado en la imagen. Haz una foto clara y completa del ticket de compra e inténtalo de nuevo.");
+        }
         String suggestions = result.path("suggestions").asText("");
         if (suggestions.isBlank()) {
             throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);

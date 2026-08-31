@@ -26,12 +26,24 @@ public class ReceiptPromptBuilder {
         StringBuilder prompt = new StringBuilder();
         prompt.append("Eres un nutricionista experto que analiza tickets de supermercado españoles ")
                 .append("(Mercadona, Carrefour, Lidl, Dia, Alcampo, etc.).\n\n");
+        prompt.append("VALIDACIÓN (OBLIGATORIA, HAZLA ANTES QUE NADA):\n");
+        prompt.append("Comprueba si la imagen es un ticket o recibo de compra de supermercado.\n");
+        prompt.append("NO es un ticket válido si la imagen muestra, por ejemplo: una persona, un selfie, un paisaje, ")
+                .append("un producto suelto sin ticket, una captura de pantalla, un documento que no sea de compra, ")
+                .append("o una foto demasiado borrosa, oscura o ilegible.\n");
+        prompt.append("Si NO es un ticket de supermercado legible, responde ÚNICAMENTE con:\n");
+        prompt.append("{\"error\": \"No se detecta un ticket de supermercado en la imagen. Haz una foto clara y completa del ticket de compra e inténtalo de nuevo.\"}\n");
+        prompt.append("Ejemplos de rechazo:\n");
+        prompt.append("- Foto de una persona → {\"error\": \"No se detecta un ticket de supermercado en la imagen. Haz una foto clara y completa del ticket de compra e inténtalo de nuevo.\"}\n");
+        prompt.append("- Foto de un producto sin ticket → {\"error\": \"La imagen muestra un producto, no un ticket. Haz una foto del ticket de compra completo e inténtalo de nuevo.\"}\n");
+        prompt.append("- Imagen borrosa o ilegible → {\"error\": \"El ticket no se lee con claridad. Haz la foto con buena luz, sin arrugas y enfocando todo el ticket.\"}\n");
+        prompt.append("Si SÍ es un ticket legible, continúa con las tareas.\n\n");
         prompt.append("TAREAS:\n");
         prompt.append("1. Extrae la lista de productos comprados del ticket de la imagen. ")
                 .append("Ignora líneas de precios sueltos, descuentos, programas de fidelidad, totales, IVA y fechas. ")
                 .append("Quédate solo con los nombres de los productos, normalizados en español ")
                 .append("(por ejemplo, \"L.ENTERA PASCUAL 1L\" → \"leche entera\").\n");
-        prompt.append("3. Asigna a la compra una puntuación de saludabilidad de 0 a 10, teniendo en cuenta ")
+        prompt.append("2. Asigna a la compra una puntuación de saludabilidad de 0 a 10, teniendo en cuenta ")
                 .append("el perfil del usuario (0 = muy poco saludable, 10 = excelente).\n\n");
         prompt.append("PERFIL DEL USUARIO:\n");
         prompt.append("- Objetivo: ").append(goalText).append('\n');
@@ -66,9 +78,8 @@ public class ReceiptPromptBuilder {
             prompt.append("## Optimización de presupuesto\n");
             prompt.append("Alternativas más baratas, cambios de marca (marca blanca), consejos de compra a granel.\n");
         }
-        prompt.append("\nSi la imagen NO es un ticket de supermercado legible, responde ÚNICAMENTE con:\n");
-        prompt.append("{\"error\": \"<mensaje claro en español explicando que la foto no es un ticket legible ");
-        prompt.append("y pidiendo repetirla>\"}\n");
+        prompt.append("\nRECUERDA: si la imagen NO es un ticket de supermercado legible, responde SOLO con el JSON de error ");
+        prompt.append("definido en VALIDACIÓN; no extraigas productos ni des sugerencias.\n");
         return prompt.toString();
     }
 }

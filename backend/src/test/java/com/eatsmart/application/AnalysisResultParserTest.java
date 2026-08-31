@@ -113,24 +113,23 @@ class AnalysisResultParserTest {
     }
 
     @Test
-    void parse_emptyProductsList_returnsResponse() throws Exception {
+    void parse_emptyProductsList_throwsUnreadableReceiptException() {
         String json = """
                 {"products": [], "score": 3, "suggestions": "No encontré productos"}
                 """;
-        AnalyzeResponse result = parser.parse(json);
-        assertThat(result.products()).isEmpty();
-        assertThat(result.suggestions()).isEqualTo("No encontré productos");
-        assertThat(result.score()).isEqualTo(3);
+        assertThatThrownBy(() -> parser.parse(json))
+                .isInstanceOf(UnreadableReceiptException.class)
+                .hasMessageContaining("No se detecta un ticket");
     }
 
     @Test
-    void parse_missingProductsField_returnsEmptyProducts() throws Exception {
+    void parse_missingProductsField_throwsUnreadableReceiptException() {
         String json = """
                 {"score": 8, "suggestions": "Algo"}
                 """;
-        AnalyzeResponse result = parser.parse(json);
-        assertThat(result.products()).isNull();
-        assertThat(result.suggestions()).isEqualTo("Algo");
+        assertThatThrownBy(() -> parser.parse(json))
+                .isInstanceOf(UnreadableReceiptException.class)
+                .hasMessageContaining("No se detecta un ticket");
     }
 
     @Test
