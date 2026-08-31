@@ -127,6 +127,41 @@ class ProductPromptBuilderTest {
     }
 
     @Test
+    void build_containsMandatoryValidationSection() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("VALIDACIÓN (OBLIGATORIA, HAZLA ANTES QUE NADA)");
+    }
+
+    @Test
+    void build_validationListsNonProductExamples() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("una persona");
+        assertThat(prompt).contains("un ticket o recibo de compra");
+        assertThat(prompt).contains("captura de pantalla");
+        assertThat(prompt).contains("ilegible");
+    }
+
+    @Test
+    void build_validationContainsRejectionExamples() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("Ejemplos de rechazo:");
+        assertThat(prompt).contains("Foto de una persona → {\"error\":");
+    }
+
+    @Test
+    void build_validationErrorMessageIsSpanishAndActionable() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("No se detecta un producto de supermercado en la imagen");
+        assertThat(prompt).contains("inténtalo de nuevo");
+    }
+
+    @Test
+    void build_finalReminderForbidsAnalysisOnInvalidImage() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("no identifiques producto ni des valoración");
+    }
+
+    @Test
     void build_containsStrictRules() {
         String prompt = builder.build("LOSE", false, "", "NONE");
         assertThat(prompt).contains("REGLAS ESTRICTAS");
