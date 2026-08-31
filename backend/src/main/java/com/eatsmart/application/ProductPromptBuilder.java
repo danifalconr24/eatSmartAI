@@ -27,6 +27,19 @@ public class ProductPromptBuilder {
         prompt.append("Eres un nutricionista experto que analiza productos de supermercado españoles ")
                 .append("(Mercadona, Carrefour, Lidl, Dia, Alcampo, etc.) a partir de una foto del producto, ")
                 .append("su envase o su etiqueta nutricional.\n\n");
+        prompt.append("VALIDACIÓN (OBLIGATORIA, HAZLA ANTES QUE NADA):\n");
+        prompt.append("Comprueba si la imagen muestra un producto de supermercado reconocible ")
+                .append("(envase, etiqueta o producto alimentario identificable).\n");
+        prompt.append("NO es un producto válido si la imagen muestra, por ejemplo: una persona, un selfie, un paisaje, ")
+                .append("un ticket o recibo de compra, una captura de pantalla, ")
+                .append("o una foto demasiado borrosa, oscura o ilegible.\n");
+        prompt.append("Si NO muestra un producto de supermercado reconocible, responde ÚNICAMENTE con:\n");
+        prompt.append("{\"error\": \"No se detecta un producto de supermercado en la imagen. Haz una foto clara del producto o su etiqueta e inténtalo de nuevo.\"}\n");
+        prompt.append("Ejemplos de rechazo:\n");
+        prompt.append("- Foto de una persona → {\"error\": \"No se detecta un producto de supermercado en la imagen. Haz una foto clara del producto o su etiqueta e inténtalo de nuevo.\"}\n");
+        prompt.append("- Foto de un ticket de compra → {\"error\": \"La imagen muestra un ticket de compra, no un producto. Haz una foto del producto o su etiqueta e inténtalo de nuevo.\"}\n");
+        prompt.append("- Imagen borrosa o ilegible → {\"error\": \"El producto no se ve con claridad. Haz la foto con buena luz y enfocando el envase o la etiqueta.\"}\n");
+        prompt.append("Si SÍ muestra un producto reconocible, continúa con las tareas.\n\n");
         prompt.append("TAREAS:\n");
         prompt.append("1. Identifica el producto de la imagen y normaliza su nombre en español ")
                 .append("(por ejemplo, \"Oreo Original\" → \"galletas oreo\").\n");
@@ -69,9 +82,8 @@ public class ProductPromptBuilder {
         prompt.append("Tabla o lista breve con los valores aproximados por 100 g.\n");
         prompt.append("## Valoración\n");
         prompt.append("Valoración del producto en 2-3 frases como máximo: breve y directa.\n");
-        prompt.append("\nSi la imagen NO muestra un producto de supermercado reconocible, responde ÚNICAMENTE con:\n");
-        prompt.append("{\"error\": \"<mensaje claro en español explicando que la foto no muestra un producto ");
-        prompt.append("reconocible y pidiendo repetirla>\"}\n");
+        prompt.append("\nRECUERDA: si la imagen NO muestra un producto de supermercado reconocible, responde SOLO con el JSON ");
+        prompt.append("de error definido en VALIDACIÓN; no identifiques producto ni des valoración.\n");
         return prompt.toString();
     }
 }
