@@ -2,18 +2,70 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../api_client.dart';
+import '../data/chat_session.dart';
 import '../widgets/score_header.dart';
+import 'chat_screen.dart';
 
-class ProductResultScreen extends StatelessWidget {
-  const ProductResultScreen({super.key, required this.result});
+class ProductResultScreen extends StatefulWidget {
+  const ProductResultScreen({
+    super.key,
+    required this.result,
+    required this.goal,
+    required this.budgetMatters,
+    required this.allergies,
+    required this.dietPreference,
+  });
 
   final ProductAnalysisResult result;
+  final String goal;
+  final bool budgetMatters;
+  final String allergies;
+  final String dietPreference;
+
+  @override
+  State<ProductResultScreen> createState() => _ProductResultScreenState();
+}
+
+class _ProductResultScreenState extends State<ProductResultScreen> {
+  ProductAnalysisResult get result => widget.result;
+
+  /// Vive aquí (no en el popup) para conservar el historial al cerrar y
+  /// reabrir el chat mientras la pantalla de resultados siga viva.
+  late final ChatSession _chatSession = ChatSession(
+    analysisContext: ChatContextData.product(
+      product: widget.result.product,
+      nutrition: widget.result.nutrition,
+      score: widget.result.score,
+      goal: widget.goal,
+      budgetMatters: widget.budgetMatters,
+      allergies: widget.allergies,
+      dietPreference: widget.dietPreference,
+    ),
+  );
+
+  @override
+  void dispose() {
+    _chatSession.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Tu análisis')),
+      appBar: AppBar(
+        title: const Text('Tu análisis'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton.tonalIcon(
+              onPressed: () => showChatPopup(context, _chatSession),
+              icon: const Icon(Icons.question_answer, size: 18),
+              label: const Text('Chat'),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           ScoreHeader(

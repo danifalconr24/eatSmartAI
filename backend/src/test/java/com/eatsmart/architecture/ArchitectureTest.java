@@ -87,6 +87,7 @@ class ArchitectureTest {
                     .should().implement("com.eatsmart.application.port.ReceiptAnalysisGateway")
                     .andShould().implement("com.eatsmart.application.port.ProductAnalysisGateway")
                     .andShould().implement("com.eatsmart.application.port.ShoppingListGenerationGateway")
+                    .andShould().implement("com.eatsmart.application.port.ChatGateway")
                     .allowEmptyShould(true);
 
     @ArchTest
@@ -95,6 +96,7 @@ class ArchitectureTest {
                     .should().implement("com.eatsmart.application.port.ReceiptAnalysisGateway")
                     .andShould().implement("com.eatsmart.application.port.ProductAnalysisGateway")
                     .andShould().implement("com.eatsmart.application.port.ShoppingListGenerationGateway")
+                    .andShould().implement("com.eatsmart.application.port.ChatGateway")
                     .allowEmptyShould(true);
 
     @ArchTest

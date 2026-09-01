@@ -43,7 +43,15 @@ class _ProductAnalysisScreenState extends State<ProductAnalysisScreen> {
       );
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => ProductResultScreen(result: result)),
+        MaterialPageRoute(
+          builder: (_) => ProductResultScreen(
+            result: result,
+            goal: widget.goal,
+            budgetMatters: widget.budgetMatters,
+            allergies: widget.allergies,
+            dietPreference: widget.dietPreference,
+          ),
+        ),
       );
     } on ApiException catch (e) {
       if (!mounted) return;

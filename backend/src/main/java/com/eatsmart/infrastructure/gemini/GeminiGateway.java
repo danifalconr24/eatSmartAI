@@ -7,10 +7,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import com.eatsmart.application.port.ChatGateway;
 import com.eatsmart.application.port.ProductAnalysisGateway;
 import com.eatsmart.application.port.ReceiptAnalysisGateway;
 import com.eatsmart.application.port.ShoppingListGenerationGateway;
 import com.eatsmart.domain.exception.AnalysisException;
+import com.eatsmart.domain.model.ChatMessage;
 import com.eatsmart.infrastructure.gemini.dto.GeminiGenerateRequest;
 import com.eatsmart.infrastructure.gemini.dto.GeminiGenerateResponse;
 
@@ -22,9 +24,9 @@ import jakarta.ws.rs.WebApplicationException;
  * Fallback provider: Google Gemini generateContent API.
  */
 @ApplicationScoped
-@Priority(2)
+@Priority(1)
 public class GeminiGateway
-        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway {
+        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway, ChatGateway {
 
     private static final Logger LOG = Logger.getLogger(GeminiGateway.class);
     private static final double TEMPERATURE = 0.3;
@@ -51,7 +53,7 @@ public class GeminiGateway
     @Override
     public String generateText(String prompt) throws AnalysisException {
         GeminiGenerateRequest request = new GeminiGenerateRequest(
-                List.of(new GeminiGenerateRequest.Content(List.of(
+                List.of(GeminiGenerateRequest.Content.of(List.of(
                         GeminiGenerateRequest.Part.text(prompt)))),
                 new GeminiGenerateRequest.GenerationConfig("application/json", TEMPERATURE));
         return call(request);
@@ -60,11 +62,31 @@ public class GeminiGateway
     @Override
     public String analyze(byte[] imageBytes, String mimeType, String prompt) throws AnalysisException {
         GeminiGenerateRequest request = new GeminiGenerateRequest(
-                List.of(new GeminiGenerateRequest.Content(List.of(
+                List.of(GeminiGenerateRequest.Content.of(List.of(
                         GeminiGenerateRequest.Part.image(mimeType, Base64.getEncoder().encodeToString(imageBytes)),
                         GeminiGenerateRequest.Part.text(prompt)))),
                 new GeminiGenerateRequest.GenerationConfig("application/json", TEMPERATURE));
         return call(request);
+    }
+
+    @Override
+    public String chat(String systemPrompt, List<ChatMessage> history, String question) throws AnalysisException {
+        // Gemini generateContent has no system role in this DTO: the system
+        // prompt travels as the first user turn. Chat needs free-text output,
+        // so no responseMimeType is forced here.
+        List<GeminiGenerateRequest.Content> contents = new java.util.ArrayList<>();
+        contents.add(GeminiGenerateRequest.Content.user(List.of(
+                GeminiGenerateRequest.Part.text(systemPrompt))));
+        for (ChatMessage message : history) {
+            var part = GeminiGenerateRequest.Part.text(message.content());
+            contents.add(ChatMessage.ROLE_ASSISTANT.equals(message.role())
+                    ? GeminiGenerateRequest.Content.model(List.of(part))
+                    : GeminiGenerateRequest.Content.user(List.of(part)));
+        }
+        contents.add(GeminiGenerateRequest.Content.user(List.of(
+                GeminiGenerateRequest.Part.text(question))));
+        return call(new GeminiGenerateRequest(
+                contents, new GeminiGenerateRequest.GenerationConfig(null, TEMPERATURE)));
     }
 
     private String call(GeminiGenerateRequest request) throws AnalysisException {
