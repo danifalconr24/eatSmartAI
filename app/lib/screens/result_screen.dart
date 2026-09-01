@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../api_client.dart';
+import '../data/chat_session.dart';
 import '../data/shopping_list_repository.dart';
 import '../models/shopping_list.dart';
 import '../widgets/score_header.dart';
+import 'chat_screen.dart';
 import 'shopping_list_detail_screen.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -30,6 +32,26 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   final ShoppingListRepository _repository = ShoppingListRepository();
   bool _generating = false;
+
+  /// Vive aquí (no en el popup) para conservar el historial al cerrar y
+  /// reabrir el chat mientras la pantalla de resultados siga viva.
+  late final ChatSession _chatSession = ChatSession(
+    analysisContext: ChatContextData.receipt(
+      products: widget.result.products,
+      suggestions: widget.result.suggestions,
+      score: widget.result.score,
+      goal: widget.goal,
+      budgetMatters: widget.budgetMatters,
+      allergies: widget.allergies,
+      dietPreference: widget.dietPreference,
+    ),
+  );
+
+  @override
+  void dispose() {
+    _chatSession.dispose();
+    super.dispose();
+  }
 
   Future<void> _generateShoppingList() async {
     setState(() => _generating = true);
@@ -78,7 +100,19 @@ class _ResultScreenState extends State<ResultScreen> {
     final theme = Theme.of(context);
     final result = widget.result;
     return Scaffold(
-      appBar: AppBar(title: const Text('Tu análisis')),
+      appBar: AppBar(
+        title: const Text('Tu análisis'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton.tonalIcon(
+              onPressed: () => showChatPopup(context, _chatSession),
+              icon: const Icon(Icons.question_answer, size: 18),
+              label: const Text('Chat'),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           ScoreHeader(
