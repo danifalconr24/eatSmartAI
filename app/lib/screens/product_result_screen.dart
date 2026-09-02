@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../api_client.dart';
 import '../data/chat_session.dart';
+import '../widgets/markdown_sections.dart';
 import '../widgets/score_header.dart';
 import 'chat_screen.dart';
 
@@ -52,18 +52,18 @@ class _ProductResultScreenState extends State<ProductResultScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sections = parseMarkdownSections(result.nutrition);
+    final alternative = result.alternative;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tu análisis'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilledButton.tonalIcon(
-              onPressed: () => showChatPopup(context, _chatSession),
-              icon: const Icon(Icons.question_answer, size: 18),
-              label: const Text('Chat'),
-            ),
+          TextButton.icon(
+            onPressed: () => showChatPopup(context, _chatSession),
+            icon: const Icon(Icons.question_answer, size: 18),
+            label: const Text('Chat'),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -73,87 +73,46 @@ class _ProductResultScreenState extends State<ProductResultScreen> {
             label: productScoreLabel(result.score),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Producto detectado',
-                style: theme.textTheme.titleSmall,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Chip(
+                avatar: Icon(
+                  Icons.fastfood_outlined,
+                  size: 18,
+                  color: theme.colorScheme.primary,
+                ),
                 label: Text(result.product),
                 visualDensity: VisualDensity.compact,
               ),
             ),
           ),
-          const Divider(height: 1),
           Expanded(
-            child: Markdown(
-              data: result.nutrition,
-              padding: const EdgeInsets.all(16),
-              styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                h2: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-                h2Padding: const EdgeInsets.only(top: 16, bottom: 4),
-              ),
-            ),
-          ),
-          if (result.alternative != null)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.swap_vert,
-                        color: theme.colorScheme.onSecondaryContainer,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Alternativa más saludable',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSecondaryContainer,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    result.alternative!.name,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (result.alternative!.reason.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      result.alternative!.reason,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                if (sections.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      result.nutrition,
                       style: theme.textTheme.bodyMedium,
                     ),
-                  ],
-                ],
-              ),
+                  )
+                else
+                  for (var i = 0; i < sections.length; i++)
+                    ExpandableSectionCard(
+                      section: sections[i],
+                      initiallyExpanded: i == 0,
+                    ),
+                if (alternative != null)
+                  _AlternativeCard(alternative: alternative),
+              ],
             ),
+          ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -165,6 +124,61 @@ class _ProductResultScreenState extends State<ProductResultScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AlternativeCard extends StatelessWidget {
+  const _AlternativeCard({required this.alternative});
+
+  final ProductAlternative alternative;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.swap_horiz,
+                color: theme.colorScheme.onSecondaryContainer,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Alternativa más saludable',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            alternative.name,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (alternative.reason.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              alternative.reason,
+              style: theme.textTheme.bodyMedium,
+            ),
+          ],
         ],
       ),
     );

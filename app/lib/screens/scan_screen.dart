@@ -5,63 +5,44 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../image_utils.dart';
+import '../shared_camera.dart';
 import 'form_screen.dart';
 
 enum ScanMode { ticket, product }
 
 class ScanScreen extends StatefulWidget {
-  const ScanScreen({super.key, required this.mode});
+  const ScanScreen({super.key, required this.mode, this.embedded = false});
 
   final ScanMode mode;
+
+  /// Cuando es true, la pantalla se renderiza sin Scaffold/AppBar propios
+  /// (pensada para vivir dentro del PageView de HomeScreen).
+  final bool embedded;
 
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
-  CameraController? _controller;
-  bool _cameraReady = false;
+class _ScanScreenState extends State<ScanScreen>
+    with AutomaticKeepAliveClientMixin {
   bool _busy = false;
 
   bool get _isTicket => widget.mode == ScanMode.ticket;
 
+  ValueNotifier<CameraController?> get _sharedController =>
+      SharedCamera.instance.controller;
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     super.initState();
-    _initCamera();
-  }
-
-  Future<void> _initCamera() async {
-    try {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) return;
-      final back = cameras.firstWhere(
-        (c) => c.lensDirection == CameraLensDirection.back,
-        orElse: () => cameras.first,
-      );
-      final controller = CameraController(back, ResolutionPreset.high);
-      await controller.initialize();
-      if (!mounted) {
-        await controller.dispose();
-        return;
-      }
-      setState(() {
-        _controller = controller;
-        _cameraReady = true;
-      });
-    } catch (_) {
-      // Sin cámara disponible (p. ej. emulador): se puede usar la galería.
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
+    SharedCamera.instance.ensureInitialized();
   }
 
   Future<void> _takePhoto() async {
-    final controller = _controller;
+    final controller = _sharedController.value;
     if (controller == null || _busy) return;
     setState(() => _busy = true);
     try {
@@ -78,13 +59,22 @@ class _ScanScreenState extends State<ScanScreen> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      final picked =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
+      final XFile? picked;
+      try {
+        picked = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          // En iOS, la lectura de metadatos completos puede fallar con
+          // PHPicker en simulador; no los necesitamos.
+          requestFullMetadata: false,
+        );
+      } catch (e) {
+        debugPrint('image_picker error: $e');
+        _showError('No se pudo abrir la galería.');
+        return;
+      }
       if (picked != null) {
         await _previewAndContinue(File(picked.path));
       }
-    } catch (_) {
-      _showError('No se pudo abrir la galería.');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -96,16 +86,21 @@ class _ScanScreenState extends State<ScanScreen> {
       MaterialPageRoute(builder: (_) => PreviewScreen(imageFile: file)),
     );
     if (confirmed == true && mounted) {
-      final compressed = await downscaleImage(file);
-      if (!mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => FormScreen(
-            imageFile: compressed,
-            mode: widget.mode,
+      try {
+        final compressed = await downscaleImage(file);
+        if (!mounted) return;
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => FormScreen(
+              imageFile: compressed,
+              mode: widget.mode,
+            ),
           ),
-        ),
-      );
+        );
+      } catch (e) {
+        debugPrint('preview/continue error: $e');
+        _showError('No se pudo procesar la imagen. Inténtalo con otra.');
+      }
     }
   }
 
@@ -115,56 +110,92 @@ class _ScanScreenState extends State<ScanScreen> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('eatSmartAI')),
-      body: Column(
-        children: [
-          Expanded(
-            child: _cameraReady
-                ? CameraPreview(_controller!)
-                : Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(
-                        _isTicket
-                            ? 'Cámara no disponible.\nPuedes elegir una foto del ticket desde la galería.'
-                            : 'Cámara no disponible.\nPuedes elegir una foto del producto desde la galería.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _busy ? null : _pickFromGallery,
-                      icon: const Icon(Icons.photo_library),
-                      label: const Text('Galería'),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton.icon(
-                      onPressed: (_cameraReady && !_busy) ? _takePhoto : null,
-                      icon: const Icon(Icons.camera_alt),
-                      label: Text(
-                        _isTicket ? 'Fotografiar ticket' : 'Fotografiar producto',
-                      ),
-                    ),
-                  ),
-                ],
+  Widget _buildBody(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Container(
+                color: theme.colorScheme.surfaceContainerLow,
+                child: ValueListenableBuilder<CameraController?>(
+                  valueListenable: _sharedController,
+                  builder: (context, controller, _) {
+                    if (controller == null) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            _isTicket
+                                ? 'Cámara no disponible.\nPuedes elegir una foto del ticket desde la galería.'
+                                : 'Cámara no disponible.\nPuedes elegir una foto del producto desde la galería.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }
+                    return CameraPreview(controller);
+                  },
+                ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            // En modo incrustado, dejar hueco para la barra de navegación
+            // flotante de HomeScreen (extendBody).
+            padding: EdgeInsets.fromLTRB(
+                16, 16, 16, widget.embedded ? 104 : 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _busy ? null : _pickFromGallery,
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Galería'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: ValueListenableBuilder<CameraController?>(
+                    valueListenable: _sharedController,
+                    builder: (context, controller, _) {
+                      return FilledButton.icon(
+                        onPressed:
+                            (controller != null && !_busy) ? _takePhoto : null,
+                        icon: const Icon(Icons.camera_alt),
+                        label: Text(
+                          _isTicket
+                              ? 'Fotografiar ticket'
+                              : 'Fotografiar producto',
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    if (widget.embedded) {
+      return _buildBody(context);
+    }
+    return Scaffold(
+      appBar: AppBar(title: const Text('eatSmartAI')),
+      body: _buildBody(context),
     );
   }
 }
