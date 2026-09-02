@@ -104,14 +104,12 @@ class _ResultScreenState extends State<ResultScreen> {
       appBar: AppBar(
         title: const Text('Tu análisis'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilledButton.tonalIcon(
-              onPressed: () => showChatPopup(context, _chatSession),
-              icon: const Icon(Icons.question_answer, size: 18),
-              label: const Text('Chat'),
-            ),
+          TextButton.icon(
+            onPressed: () => showChatPopup(context, _chatSession),
+            icon: const Icon(Icons.question_answer, size: 18),
+            label: const Text('Chat'),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
