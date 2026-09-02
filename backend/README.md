@@ -27,6 +27,32 @@ src/main/java/com/eatsmart/
 
 ## API Endpoint
 
+### `POST /api/chat`
+
+Answers user questions about a previous analysis (receipt or product), nutritionist-style. Stateless: the client resends the analysis context and the full message history on every request.
+
+**Request (application/json):**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| question | string | Yes | User question |
+| products | string[] | Receipt chats | Products detected in the receipt |
+| suggestions | string | Receipt chats | Suggestions markdown from the analysis |
+| product | string | Product chats | Detected product name |
+| nutrition | string | Product chats | Nutrition markdown from the analysis |
+| score | int | No | Analysis score (0-10) |
+| goal | string | Yes | `LOSE`, `MAINTAIN`, or `GAIN` |
+| dietPreference | string | No | `NONE`, `VEGETARIAN`, `VEGAN`, or `OTHER` |
+| budgetMatters | boolean | No | Consider budget in answers |
+| allergies | string | No | Comma-separated allergies |
+| messages | array | No | Previous turns `[{role: "user"\|"assistant", content}]` (max 20 kept) |
+
+**Response (200):**
+```json
+{
+  "answer": "Mejor pan integral: más fibra y saciedad..."
+}
+```
+
 ### `POST /api/analyze`
 
 Analyzes a receipt image and returns product suggestions.

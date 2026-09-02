@@ -9,7 +9,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record GeminiGenerateRequest(List<Content> contents,
         @JsonProperty("generationConfig") GenerationConfig generationConfig) {
 
-    public record Content(List<Part> parts) {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record Content(String role, List<Part> parts) {
+        public static Content of(List<Part> parts) {
+            return new Content(null, parts);
+        }
+
+        public static Content user(List<Part> parts) {
+            return new Content("user", parts);
+        }
+
+        public static Content model(List<Part> parts) {
+            return new Content("model", parts);
+        }
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

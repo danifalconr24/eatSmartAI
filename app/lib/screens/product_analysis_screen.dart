@@ -43,7 +43,15 @@ class _ProductAnalysisScreenState extends State<ProductAnalysisScreen> {
       );
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => ProductResultScreen(result: result)),
+        MaterialPageRoute(
+          builder: (_) => ProductResultScreen(
+            result: result,
+            goal: widget.goal,
+            budgetMatters: widget.budgetMatters,
+            allergies: widget.allergies,
+            dietPreference: widget.dietPreference,
+          ),
+        ),
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -56,22 +64,31 @@ class _ProductAnalysisScreenState extends State<ProductAnalysisScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
+        icon: Icon(
+          Icons.error_outline,
+          size: 40,
+          color: Theme.of(dialogContext).colorScheme.error,
+        ),
         title: const Text('Error'),
-        content: Text(message),
+        content: Text(message, textAlign: TextAlign.center),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsOverflowAlignment: OverflowBarAlignment.center,
+        actionsOverflowDirection: VerticalDirection.down,
+        actionsOverflowButtonSpacing: 8,
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Volver'),
-          ),
           FilledButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               _run();
             },
             child: const Text('Reintentar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text('Volver'),
           ),
         ],
       ),

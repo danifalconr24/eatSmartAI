@@ -8,6 +8,7 @@ Flutter mobile app that photographs Spanish supermarket receipts, sends them to 
 - Profile form for health goals, budget, allergies, and diet preferences
 - Real-time analysis with loading indicator
 - Markdown-rendered results with product identification and nutrition advice
+- Nutritionist chat ("Chat" button in the result screens' AppBar) opens as a floating popup over the results; the session is kept while the result screen stays open, so closing and reopening the popup keeps the history
 - Spanish UI throughout
 
 ## Tech Stack

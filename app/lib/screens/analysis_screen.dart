@@ -64,22 +64,31 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
+        icon: Icon(
+          Icons.error_outline,
+          size: 40,
+          color: Theme.of(dialogContext).colorScheme.error,
+        ),
         title: const Text('Error'),
-        content: Text(message),
+        content: Text(message, textAlign: TextAlign.center),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsOverflowAlignment: OverflowBarAlignment.center,
+        actionsOverflowDirection: VerticalDirection.down,
+        actionsOverflowButtonSpacing: 8,
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Volver'),
-          ),
           FilledButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               _run();
             },
             child: const Text('Reintentar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text('Volver'),
           ),
         ],
       ),
