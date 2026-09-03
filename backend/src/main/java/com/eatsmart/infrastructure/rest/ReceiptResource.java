@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.eatsmart.infrastructure.rest.dto.ErrorResponse;
+import io.smallrye.common.annotation.RunOnVirtualThread;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.server.multipart.FileItem;
 import org.jboss.resteasy.reactive.server.multipart.FormValue;
@@ -26,6 +27,7 @@ import jakarta.ws.rs.core.Response;
 
 @Path("/api/analyze")
 @Produces(MediaType.APPLICATION_JSON)
+@RunOnVirtualThread
 public class ReceiptResource {
 
     private static final Logger LOG = Logger.getLogger(ReceiptResource.class);

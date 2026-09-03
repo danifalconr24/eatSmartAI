@@ -10,6 +10,7 @@ import com.eatsmart.domain.model.ShoppingList;
 import com.eatsmart.infrastructure.rest.dto.ErrorResponse;
 import com.eatsmart.infrastructure.rest.dto.GenerateShoppingListRequest;
 import com.eatsmart.infrastructure.rest.dto.GenerateShoppingListResponse;
+import io.smallrye.common.annotation.RunOnVirtualThread;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -20,6 +21,7 @@ import jakarta.ws.rs.core.Response;
 
 @Path("/api/shopping-lists")
 @Produces(MediaType.APPLICATION_JSON)
+@RunOnVirtualThread
 public class ShoppingListResource {
 
     private static final Set<String> VALID_GOALS = Set.of("LOSE", "MAINTAIN", "GAIN");

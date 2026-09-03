@@ -11,6 +11,7 @@ import com.eatsmart.domain.model.ChatMessage;
 import com.eatsmart.infrastructure.rest.dto.ChatRequest;
 import com.eatsmart.infrastructure.rest.dto.ChatResponse;
 import com.eatsmart.infrastructure.rest.dto.ErrorResponse;
+import io.smallrye.common.annotation.RunOnVirtualThread;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -21,6 +22,7 @@ import jakarta.ws.rs.core.Response;
 
 @Path("/api/chat")
 @Produces(MediaType.APPLICATION_JSON)
+@RunOnVirtualThread
 public class ChatResource {
 
     private static final Set<String> VALID_GOALS = Set.of("LOSE", "MAINTAIN", "GAIN");
