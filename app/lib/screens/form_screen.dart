@@ -38,15 +38,13 @@ class _FormScreenState extends State<FormScreen> {
     if (_submitting) return;
     setState(() => _submitting = true);
     try {
-      var paid = await CreditService.instance.spendCredit();
-      if (!mounted) return;
-      if (!paid) {
-        // Sin créditos: ofrecer ganar créditos viendo un vídeo. Si los gana,
-        // reintentar el pago para continuar con el análisis.
+      // Solo se comprueba el saldo aquí: el crédito se descuenta en la
+      // pantalla de análisis, una vez recibido el resultado con éxito (si
+      // el análisis falla, el usuario no pierde el crédito).
+      if (!CreditService.instance.hasCredits) {
         final earned = await showNoCreditsDialog(context);
         if (!mounted || !earned) return;
-        paid = await CreditService.instance.spendCredit();
-        if (!mounted || !paid) return;
+        if (!CreditService.instance.hasCredits) return;
       }
       if (_isTicket) {
         Navigator.of(context).push(

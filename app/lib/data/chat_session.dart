@@ -8,14 +8,24 @@ import '../api_client.dart';
 class ChatSession extends ChangeNotifier {
   ChatSession({required this.analysisContext});
 
+  /// Preguntas que el usuario puede hacer por análisis.
+  static const int maxQuestions = 2;
+
   final ChatContextData analysisContext;
 
   final List<ChatMessage> messages = [];
   bool sending = false;
 
+  /// Preguntas ya hechas por el usuario en esta sesión.
+  int get questionsAsked => messages.where((m) => m.role == 'user').length;
+
+  /// Preguntas que quedan disponibles (0 = límite alcanzado).
+  int get questionsRemaining =>
+      (maxQuestions - questionsAsked).clamp(0, maxQuestions);
+
   Future<void> send(String question) async {
     final trimmed = question.trim();
-    if (trimmed.isEmpty || sending) return;
+    if (trimmed.isEmpty || sending || questionsRemaining <= 0) return;
 
     sending = true;
     messages.add(ChatMessage(role: 'user', content: trimmed));

@@ -14,16 +14,27 @@ EatSmart analyzes grocery receipts via AI to provide:
 src/main/java/com/eatsmart/
 ├── application/        # Use cases and business logic
 │   ├── AnalyzeReceiptUseCase.java
-│   ├── AnalysisResultParser.java
-│   └── ReceiptPromptBuilder.java
-├── domain/            # Domain models and ports
+│   ├── AnalyzeProductUseCase.java
+│   ├── GenerateShoppingListUseCase.java
+│   ├── ChatWithNutritionistUseCase.java
+│   └── ... (prompt builders + result parsers)
+├── domain/            # Domain models and exceptions
 │   ├── model/
-│   └── port/
+│   └── exception/
 └── infrastructure/    # External integrations
     ├── rest/          # REST API endpoints
-    ├── openrouter/    # OpenRouter AI client
+    ├── openrouter/    # OpenRouter AI client (primary)
     └── gemini/        # Gemini AI client (fallback)
 ```
+
+## Error contract
+
+Each endpoint returns `ErrorResponse {"message": "..."}` with Spanish, user-facing text:
+
+- **400** — valid business rejection: unreadable receipt, unrecognizable product, invalid request.
+- **502** — technical failure after trying all enabled providers. The message is intentionally **generic** ("No se pudo completar el análisis. Inténtalo de nuevo en unos minutos."): provider names/details (OpenRouter, Gemini, HTTP statuses) are logged server-side only and never exposed to clients. The original exception is chained as the cause for logs.
+
+The app relies on this contract: `400` consumes one user credit (the analysis ran), `502`/network failures do not.
 
 ## API Endpoint
 

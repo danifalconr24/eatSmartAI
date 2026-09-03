@@ -128,7 +128,7 @@ class ChatWithNutritionistUseCaseTest {
     }
 
     @Test
-    void chat_allProvidersFail_throwsLastAnalysisException() {
+    void chat_allProvidersFail_throwsGenericMessageWithCause() {
         FakePrimaryGateway primary = new FakePrimaryGateway() {
             @Override public String chat(String systemPrompt, List<ChatMessage> history, String question)
                     throws AnalysisException {
@@ -138,8 +138,11 @@ class ChatWithNutritionistUseCaseTest {
         doReturn(List.of(handle(primary))).when(gatewaysInstance).handles();
         doReturn("system prompt").when(promptBuilder).build(CONTEXT);
 
+        // El mensaje hacia el usuario es genérico (sin detalles del
+        // proveedor); el error original queda encadenado como causa.
         assertThatThrownBy(() -> useCase.chat(CONTEXT, HISTORY, "¿Qué mejorar?"))
                 .isInstanceOf(AnalysisException.class)
-                .hasMessageContaining("fail");
+                .hasMessageNotContaining("fail")
+                .hasCauseInstanceOf(AnalysisException.class);
     }
 }

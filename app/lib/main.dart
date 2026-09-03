@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'ads/ad_service.dart';
 import 'ads/credit_service.dart';
@@ -6,6 +7,10 @@ import 'screens/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // App solo en vertical (diseño pensado para móvil en portrait).
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   AdService.instance.initialize();
   CreditService.instance.initialize();
   runApp(const EatSmartAiApp());
@@ -70,7 +75,7 @@ class EatSmartAiApp extends StatelessWidget {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 80,
+        height: 64,
         indicatorColor: colorScheme.secondaryContainer,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final style = base.textTheme.labelMedium ?? const TextStyle();

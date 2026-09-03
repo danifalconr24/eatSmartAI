@@ -49,9 +49,9 @@ class _ChatOverlayState extends State<ChatOverlay> {
     if (!mounted) return;
     final error = _session.consumeError();
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
     }
     setState(() {});
     _scrollToBottom();
@@ -79,13 +79,17 @@ class _ChatOverlayState extends State<ChatOverlay> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.75;
+    final screenSize = MediaQuery.sizeOf(context);
+    final maxHeight = screenSize.height * 0.75;
+    // En pantallas anchas (tablets, plegables) el popup no ocupa todo el
+    // ancho: se acota para mantener una lectura cómoda.
+    final maxWidth = screenSize.width < 560 ? screenSize.width : 560.0;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight),
+        constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: maxWidth),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -102,7 +106,9 @@ class _ChatOverlayState extends State<ChatOverlay> {
                         if (index == _session.messages.length) {
                           return _buildTypingIndicator(theme);
                         }
-                        return _MessageBubble(message: _session.messages[index]);
+                        return _MessageBubble(
+                          message: _session.messages[index],
+                        );
                       },
                     ),
             ),
@@ -123,9 +129,12 @@ class _ChatOverlayState extends State<ChatOverlay> {
                       textCapitalization: TextCapitalization.sentences,
                       minLines: 1,
                       maxLines: 4,
-                      decoration: const InputDecoration(
-                        hintText: 'Escribe tu duda...',
-                        border: OutlineInputBorder(),
+                      enabled: _session.questionsRemaining > 0,
+                      decoration: InputDecoration(
+                        hintText: _session.questionsRemaining > 0
+                            ? 'Escribe tu duda...'
+                            : 'Has agotado las preguntas de este análisis',
+                        border: const OutlineInputBorder(),
                         isDense: true,
                       ),
                       onSubmitted: (_) => _send(),
@@ -133,7 +142,10 @@ class _ChatOverlayState extends State<ChatOverlay> {
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    onPressed: _session.sending ? null : _send,
+                    onPressed:
+                        _session.sending || _session.questionsRemaining <= 0
+                        ? null
+                        : _send,
                     icon: _session.sending
                         ? const SizedBox(
                             width: 18,
@@ -152,11 +164,10 @@ class _ChatOverlayState extends State<ChatOverlay> {
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final remaining = _session.questionsRemaining;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 4, 10),
+      decoration: BoxDecoration(color: theme.colorScheme.primaryContainer),
       child: Row(
         children: [
           Icon(
@@ -166,11 +177,27 @@ class _ChatOverlayState extends State<ChatOverlay> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              'Pregunta al nutricionista',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Pregunta al nutricionista',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                Text(
+                  remaining == 1
+                      ? 'Te queda 1 pregunta'
+                      : 'Te quedan $remaining preguntas',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer.withValues(
+                      alpha: 0.8,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           IconButton(
@@ -222,7 +249,10 @@ class _ChatOverlayState extends State<ChatOverlay> {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8, right: 48),
+        margin: EdgeInsets.only(
+          bottom: 8,
+          right: MediaQuery.sizeOf(context).width * 0.15,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: theme.colorScheme.secondaryContainer,
@@ -247,13 +277,16 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isUser = message.role == 'user';
+    // Sangría proporcional al ancho disponible (≈15%), para que la burbuja
+    // contraria deje hueco tanto en móviles estrechos como en tablets.
+    final indent = MediaQuery.sizeOf(context).width * 0.15;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: EdgeInsets.only(
           bottom: 8,
-          left: isUser ? 48 : 0,
-          right: isUser ? 0 : 48,
+          left: isUser ? indent : 0,
+          right: isUser ? 0 : indent,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(

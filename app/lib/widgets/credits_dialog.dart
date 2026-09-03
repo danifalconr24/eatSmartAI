@@ -15,12 +15,20 @@ Future<bool> showNoCreditsDialog(BuildContext context) async {
       title: const Text('Sin créditos'),
       content: Text(
           'Necesitas 1 crédito para esta acción.\n\nMira un vídeo y gana ${CreditService.creditsPerReward} créditos.'),
+      actionsAlignment: MainAxisAlignment.end,
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
           child: const Text('Cancelar'),
         ),
         FilledButton.icon(
+          // El tema global fuerza ancho completo (Size.fromHeight(56)) en
+          // FilledButton; dentro de un diálogo el botón debe ajustarse a su
+          // contenido para alinearse con "Cancelar".
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(0, 44),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+          ),
           onPressed: () => Navigator.of(dialogContext).pop(true),
           icon: const Icon(Icons.play_circle_outline, size: 18),
           label: const Text('Ver vídeo'),

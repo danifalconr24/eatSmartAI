@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/shopping_list_repository.dart';
 import '../models/shopping_list.dart';
 import '../widgets/banner_ad_widget.dart';
+import '../widgets/floating_nav_space.dart';
 import 'shopping_list_detail_screen.dart';
 
 /// Historial de listas de la compra guardadas en el dispositivo.
@@ -111,7 +112,11 @@ class ShoppingListsScreenState extends State<ShoppingListsScreen>
       // Espacio inferior extra para que la barra de navegación flotante
       // de HomeScreen no tape la última tarjeta cuando está incrustada.
       padding: EdgeInsets.fromLTRB(
-          8, 8, 8, widget.embedded ? 120 : 8),
+        8,
+        8,
+        8,
+        widget.embedded ? FloatingNavSpace.of(context) + 16 : 8,
+      ),
       itemCount: _lists.length,
       itemBuilder: (context, index) {
         final list = _lists[index];

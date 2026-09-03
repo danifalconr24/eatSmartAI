@@ -19,20 +19,31 @@ class CreditService extends ChangeNotifier {
   static const int creditsPerReward =
       int.fromEnvironment('CREDITS_PER_REWARD', defaultValue: 3);
 
+  /// Créditos con los que empieza un usuario nuevo (primera ejecución).
+  /// Sobreescribible con:
+  /// flutter run --dart-define=INITIAL_CREDITS=5
+  static const int initialCredits =
+      int.fromEnvironment('INITIAL_CREDITS', defaultValue: 1);
+
   int _balance = 0;
   bool _loaded = false;
 
   int get balance => _balance;
 
-  /// Carga el saldo guardado. Idempotente.
+  /// True si hay al menos 1 crédito disponible.
+  bool get hasCredits => _balance > 0;
+
+  /// Carga el saldo guardado. Idempotente. Si el usuario nunca ha tenido
+  /// saldo guardado (primera ejecución), empieza con [initialCredits].
   Future<void> initialize() async {
     if (_loaded) return;
     _loaded = true;
     try {
       final prefs = await SharedPreferences.getInstance();
-      _balance = prefs.getInt(_prefsKey) ?? 0;
+      _balance = prefs.getInt(_prefsKey) ?? initialCredits;
     } catch (e) {
       debugPrint('CreditService: no se pudo cargar el saldo: $e');
+      _balance = initialCredits;
     }
     notifyListeners();
   }

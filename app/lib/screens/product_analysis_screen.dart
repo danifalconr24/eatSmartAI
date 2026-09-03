@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../ads/credit_service.dart';
 import '../api_client.dart';
 import 'product_result_screen.dart';
 
@@ -42,6 +43,10 @@ class _ProductAnalysisScreenState extends State<ProductAnalysisScreen> {
         dietPreference: widget.dietPreference,
       );
       if (!mounted) return;
+      // El crédito se descuenta solo cuando el análisis se ha recibido con
+      // éxito; si falla (error del servicio, imagen no válida...) no se cobra.
+      await CreditService.instance.spendCredit();
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => ProductResultScreen(
@@ -53,7 +58,15 @@ class _ProductAnalysisScreenState extends State<ProductAnalysisScreen> {
           ),
         ),
       );
+    } on UnreadableImageException catch (e) {
+      // Respuesta de negocio válida ("producto no reconocible"): la
+      // petición consumió análisis del servicio, así que también descuenta
+      // crédito.
+      await CreditService.instance.spendCredit();
+      if (!mounted) return;
+      _showErrorAndGoBack(e.message);
     } on ApiException catch (e) {
+      // Fallo técnico (proveedor caído, red...): no se descuenta crédito.
       if (!mounted) return;
       _showErrorAndGoBack(e.message);
     }

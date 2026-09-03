@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../image_utils.dart';
 import '../shared_camera.dart';
 import '../widgets/banner_ad_widget.dart';
+import '../widgets/floating_nav_space.dart';
 import 'form_screen.dart';
 
 enum ScanMode { ticket, product }
@@ -92,10 +93,8 @@ class _ScanScreenState extends State<ScanScreen>
         if (!mounted) return;
         await Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => FormScreen(
-              imageFile: compressed,
-              mode: widget.mode,
-            ),
+            builder: (_) =>
+                FormScreen(imageFile: compressed, mode: widget.mode),
           ),
         );
       } catch (e) {
@@ -107,8 +106,9 @@ class _ScanScreenState extends State<ScanScreen>
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _buildBody(BuildContext context) {
@@ -146,43 +146,48 @@ class _ScanScreenState extends State<ScanScreen>
             ),
           ),
         ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            // En modo incrustado, dejar hueco para la barra de navegación
-            // flotante de HomeScreen (extendBody).
-            padding: EdgeInsets.fromLTRB(
-                16, 16, 16, widget.embedded ? 104 : 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _busy ? null : _pickFromGallery,
-                    icon: const Icon(Icons.photo_library),
-                    label: const Text('Galería'),
-                  ),
+        Padding(
+          // En modo incrustado, dejar el hueco exacto que ocupa la barra
+          // flotante de HomeScreen (medido en tiempo real, válido en
+          // cualquier dispositivo) más un pequeño margen sobre ella.
+          padding: EdgeInsets.fromLTRB(
+            16,
+            12,
+            16,
+            widget.embedded
+                ? FloatingNavSpace.of(context) + 8
+                : 16 + MediaQuery.viewPaddingOf(context).bottom,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _busy ? null : _pickFromGallery,
+                  icon: const Icon(Icons.photo_library),
+                  label: const Text('Galería'),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: ValueListenableBuilder<CameraController?>(
-                    valueListenable: _sharedController,
-                    builder: (context, controller, _) {
-                      return FilledButton.icon(
-                        onPressed:
-                            (controller != null && !_busy) ? _takePhoto : null,
-                        icon: const Icon(Icons.camera_alt),
-                        label: Text(
-                          _isTicket
-                              ? 'Fotografiar ticket'
-                              : 'Fotografiar producto',
-                        ),
-                      );
-                    },
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: ValueListenableBuilder<CameraController?>(
+                  valueListenable: _sharedController,
+                  builder: (context, controller, _) {
+                    return FilledButton.icon(
+                      onPressed: (controller != null && !_busy)
+                          ? _takePhoto
+                          : null,
+                      icon: const Icon(Icons.camera_alt),
+                      label: Text(
+                        _isTicket
+                            ? 'Fotografiar ticket'
+                            : 'Fotografiar producto',
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],

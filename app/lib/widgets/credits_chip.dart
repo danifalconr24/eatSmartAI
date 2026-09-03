@@ -27,14 +27,16 @@ class _CreditsChipState extends State<CreditsChip> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                '¡Has ganado ${CreditService.creditsPerReward} créditos!'),
+              '¡Has ganado ${CreditService.creditsPerReward} créditos!',
+            ),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'Mira el vídeo completo para ganar créditos. Si no hay anuncios disponibles, inténtalo más tarde.'),
+              'Mira el vídeo completo para ganar créditos. Si no hay anuncios disponibles, inténtalo más tarde.',
+            ),
           ),
         );
       }
@@ -49,37 +51,50 @@ class _CreditsChipState extends State<CreditsChip> {
     return ListenableBuilder(
       listenable: CreditService.instance,
       builder: (context, _) {
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          padding: const EdgeInsets.only(left: 12, right: 4),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest
-                .withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Créditos: ${CreditService.instance.balance}',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+        // Acotar la escala de texto del chip para que quepa en el AppBar
+        // incluso con tamaños de fuente del sistema muy grandes.
+        final textScaler = MediaQuery.textScalerOf(
+          context,
+        ).clamp(maxScaleFactor: 1.3);
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.only(left: 12, right: 4),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.6,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    'Créditos: ${CreditService.instance.balance}',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: _showingAd ? null : _watchAd,
-                icon: _showingAd
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.add_circle),
-                color: theme.colorScheme.primary,
-                tooltip: 'Ver vídeo para ganar créditos',
-                visualDensity: VisualDensity.compact,
-              ),
-            ],
+                IconButton(
+                  onPressed: _showingAd ? null : _watchAd,
+                  icon: _showingAd
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.add_circle),
+                  color: theme.colorScheme.primary,
+                  tooltip: 'Ver vídeo para ganar créditos',
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
           ),
         );
       },

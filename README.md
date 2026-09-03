@@ -12,12 +12,14 @@ eatSmart/
 └── backend/    # Quarkus stateless proxy (protects Gemini key)
 ```
 
-**Flow:** Scan → Profile form → Analyzing → Result (markdown)
+**Flow:** Scan (ticket or product) → Profile form → Analyzing → Result (markdown) → optional shopping list generation
 
 **Stack:**
-- **Frontend:** Flutter 3.x, Dart, `camera`, `image_picker`, `dio`, `flutter_markdown`
-- **Backend:** Quarkus 3.x, Java 25+, RESTEasy Reactive, Google Gemini (`gemini-2.5-flash`, multimodal)
-- **Persistence:** None. Stateless, no accounts, no history.
+- **Frontend:** Flutter 3.x, Dart, `camera`, `image_picker`, `dio`, `flutter_markdown`, `google_mobile_ads`, `shared_preferences`
+- **Backend:** Quarkus 3.x, Java 25+, RESTEasy Reactive. Two chained AI providers: OpenRouter (primary) → Gemini (fallback)
+- **Persistence:** None on the backend. The app persists credits and shopping lists locally (`shared_preferences`).
+
+**Monetization:** AdMob banners (top of scan and shopping list screens) + rewarded video ads that grant scan/generation credits. See [app README](app/README.md#monetization-admob--credits) for the credit system.
 
 ## Requirements
 
@@ -31,14 +33,14 @@ eatSmart/
 
 ## Backend
 
-Stateless proxy: receives receipt photo + user profile, calls Gemini, returns products + suggestions in markdown.
+Stateless proxy: receives photo + user profile, chains OpenRouter → Gemini, returns products + suggestions in markdown. Providers are enabled by their API key env var (`OPENROUTER_API_KEY`, `GEMINI_API_KEY`); at least one required.
 
 ### Run
 
 ```bash
 cd backend
 cp .env.example .env
-# edit .env and add your GEMINI_API_KEY
+# edit .env and add OPENROUTER_API_KEY and/or GEMINI_API_KEY
 ./mvnw quarkus:dev
 ```
 
@@ -65,7 +67,7 @@ Listens on `http://localhost:8080`.
 }
 ```
 
-**Errors:** `400` unreadable image / invalid request, `502` analysis service failure. Spanish `message` field included.
+**Errors:** `400` unreadable image / invalid request, `502` analysis service failure. Spanish `message` field included. `502` messages are generic ("No se pudo completar el análisis...") — provider names and details only appear in server logs, never in API responses.
 
 ### curl example
 
@@ -100,14 +102,17 @@ Backend URL is `kBackendBaseUrl` in `lib/api_client.dart`.
 
 ### User flow
 
-1. **Scan** — Camera or gallery. Preview with confirm/retake.
+1. **Scan** — Camera or gallery (ticket or product tab). Preview with confirm/retake. Costs 1 credit per completed analysis.
 2. **Profile** — Goal, budget, allergies, diet.
-3. **Analyzing** — Spinner with "Analyzing your receipt...".
+3. **Analyzing** — Spinner with "Analyzing your receipt/product...".
 4. **Result** — Markdown with fixed sections:
    - *General summary*
    - *Missing food groups*
    - *Improvements to your selection*
    - *Budget optimization* (only if `budgetMatters=true`)
+5. **Shopping list** (ticket results only) — Generate a suggested shopping list (1 credit), saved locally.
+
+Credits: the AppBar shows `Créditos: N`; the **+** button plays a rewarded video ad granting credits (default 3 per video, new users start with 1). Credits are only spent when the analysis/generation actually produces an answer — technical failures are free.
 
 ## Smoke test
 
@@ -120,8 +125,8 @@ Backend URL is `kBackendBaseUrl` in `lib/api_client.dart`.
 
 ## Security
 
-- Gemini key only lives in the backend (env `GEMINI_API_KEY`).
-- Never in the app or version control.
+- AI keys only live in the backend (env `OPENROUTER_API_KEY` / `GEMINI_API_KEY`).
+- AdMob app/unit IDs live in the app (public by design); API keys never in the app or version control.
 - `.env.example` documents required variables.
 
 ## Technical notes

@@ -54,8 +54,22 @@ class _ProductResultScreenState extends State<ProductResultScreen> {
     final theme = Theme.of(context);
     final sections = parseMarkdownSections(result.nutrition);
     final alternative = result.alternative;
-    return Scaffold(
-      appBar: AppBar(
+    // Intercepta también el gesto/botón atrás del sistema: siempre va a la
+    // pantalla principal, nunca de vuelta al formulario.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          // Volver lleva siempre a la pantalla principal, no al formulario.
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () =>
+                Navigator.of(context).popUntil((route) => route.isFirst),
+          ),
         title: const Text('Tu análisis'),
         actions: [
           TextButton.icon(
@@ -125,6 +139,7 @@ class _ProductResultScreenState extends State<ProductResultScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
