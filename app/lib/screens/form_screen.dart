@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../ads/ad_service.dart';
+import '../ads/credit_service.dart';
+import '../widgets/credits_dialog.dart';
 import 'analysis_screen.dart';
 import 'product_analysis_screen.dart';
 import 'scan_screen.dart';
@@ -31,21 +32,21 @@ class _FormScreenState extends State<FormScreen> {
     super.dispose();
   }
 
-  bool _showingAd = false;
+  bool _submitting = false;
 
   Future<void> _submit() async {
-    if (_showingAd) return;
-    setState(() => _showingAd = true);
+    if (_submitting) return;
+    setState(() => _submitting = true);
     try {
-      final earned = await AdService.instance.showRewarded();
+      var paid = await CreditService.instance.spendCredit();
       if (!mounted) return;
-      if (!earned) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Mira el vídeo completo para continuar con el análisis'),
-          ),
-        );
-        return;
+      if (!paid) {
+        // Sin créditos: ofrecer ganar créditos viendo un vídeo. Si los gana,
+        // reintentar el pago para continuar con el análisis.
+        final earned = await showNoCreditsDialog(context);
+        if (!mounted || !earned) return;
+        paid = await CreditService.instance.spendCredit();
+        if (!mounted || !paid) return;
       }
       if (_isTicket) {
         Navigator.of(context).push(
@@ -73,7 +74,7 @@ class _FormScreenState extends State<FormScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _showingAd = false);
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
@@ -130,8 +131,8 @@ class _FormScreenState extends State<FormScreen> {
           ),
           const SizedBox(height: 32),
           FilledButton.icon(
-            onPressed: _showingAd ? null : _submit,
-            icon: _showingAd
+            onPressed: _submitting ? null : _submit,
+            icon: _submitting
                 ? const SizedBox(
                     width: 18,
                     height: 18,

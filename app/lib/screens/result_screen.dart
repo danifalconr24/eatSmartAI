@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
+import '../ads/credit_service.dart';
 import '../api_client.dart';
+import '../data/chat_session.dart';
 import '../data/shopping_list_repository.dart';
 import '../models/shopping_list.dart';
+import '../widgets/credits_dialog.dart';
+import '../widgets/markdown_sections.dart';
 import '../widgets/score_header.dart';
+import 'chat_screen.dart';
 import 'shopping_list_detail_screen.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -31,9 +35,38 @@ class _ResultScreenState extends State<ResultScreen> {
   final ShoppingListRepository _repository = ShoppingListRepository();
   bool _generating = false;
 
+  /// Vive aquí (no en el popup) para conservar el historial al cerrar y
+  /// reabrir el chat mientras la pantalla de resultados siga viva.
+  late final ChatSession _chatSession = ChatSession(
+    analysisContext: ChatContextData.receipt(
+      products: widget.result.products,
+      suggestions: widget.result.suggestions,
+      score: widget.result.score,
+      goal: widget.goal,
+      budgetMatters: widget.budgetMatters,
+      allergies: widget.allergies,
+      dietPreference: widget.dietPreference,
+    ),
+  );
+
+  @override
+  void dispose() {
+    _chatSession.dispose();
+    super.dispose();
+  }
+
   Future<void> _generateShoppingList() async {
     setState(() => _generating = true);
     try {
+      var paid = await CreditService.instance.spendCredit();
+      if (!mounted) return;
+      if (!paid) {
+        // Sin créditos: ofrecer ganar créditos viendo un vídeo y reintentar.
+        final earned = await showNoCreditsDialog(context);
+        if (!mounted || !earned) return;
+        paid = await CreditService.instance.spendCredit();
+        if (!mounted || !paid) return;
+      }
       final generated = await ApiClient().generateShoppingList(
         products: widget.result.products,
         suggestions: widget.result.suggestions,
@@ -77,27 +110,28 @@ class _ResultScreenState extends State<ResultScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final result = widget.result;
+    final sections = parseMarkdownSections(result.suggestions);
     return Scaffold(
-      appBar: AppBar(title: const Text('Tu análisis')),
+      appBar: AppBar(
+        title: const Text('Tu análisis'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => showChatPopup(context, _chatSession),
+            icon: const Icon(Icons.question_answer, size: 18),
+            label: const Text('Chat'),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
           ScoreHeader(
             score: result.score,
             label: scoreLabel(result.score),
           ),
-          if (result.products.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Productos detectados',
-                  style: theme.textTheme.titleSmall,
-                ),
-              ),
-            ),
+          if (result.products.isNotEmpty)
             SizedBox(
-              height: 52,
+              height: 48,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding:
@@ -107,6 +141,11 @@ class _ResultScreenState extends State<ResultScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: Chip(
+                        avatar: Icon(
+                          Icons.shopping_basket,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
                         label: Text(p),
                         visualDensity: VisualDensity.compact,
                       ),
@@ -114,60 +153,74 @@ class _ResultScreenState extends State<ResultScreen> {
                 ],
               ),
             ),
-          ],
-          const Divider(height: 1),
           Expanded(
-            child: Markdown(
-              data: result.suggestions,
-              padding: const EdgeInsets.all(16),
-              styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                h2: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-                h2Padding: const EdgeInsets.only(top: 16, bottom: 4),
-              ),
-            ),
+            child: sections.isEmpty
+                ? _FallbackSuggestions(suggestions: result.suggestions)
+                : ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    children: [
+                      for (var i = 0; i < sections.length; i++)
+                        ExpandableSectionCard(
+                          section: sections[i],
+                          initiallyExpanded: i == 0,
+                        ),
+                    ],
+                  ),
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _generating ? null : _generateShoppingList,
-                  icon: _generating
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.shopping_cart),
-                  label: Text(_generating
-                      ? 'Generando lista...'
-                      : 'Generar lista de la compra sugerida'),
-                ),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonalIcon(
-                  onPressed: _generating
-                      ? null
-                      : () => Navigator.of(context)
-                          .popUntil((route) => route.isFirst),
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Escanear otro ticket'),
-                ),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _generating ? null : _generateShoppingList,
+                      icon: _generating
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.shopping_cart),
+                      label: Text(_generating
+                          ? 'Generando lista...'
+                          : 'Generar lista de la compra sugerida'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.tonalIcon(
+                      onPressed: _generating
+                          ? null
+                          : () => Navigator.of(context)
+                              .popUntil((route) => route.isFirst),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Escanear otro ticket'),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FallbackSuggestions extends StatelessWidget {
+  const _FallbackSuggestions({required this.suggestions});
+
+  final String suggestions;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Text(suggestions, style: theme.textTheme.bodyMedium),
     );
   }
 }

@@ -1,131 +1,105 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/bottom_banner_ad.dart';
+import '../widgets/credits_chip.dart';
 import 'scan_screen.dart';
 import 'shopping_lists_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final PageController _pageController = PageController();
+  final GlobalKey<ShoppingListsScreenState> _listsKey =
+      GlobalKey<ShoppingListsScreenState>();
+  int _currentIndex = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onDestinationSelected(int index) {
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    setState(() => _currentIndex = index);
+    if (index == 2) {
+      _listsKey.currentState?.reload();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('eatSmartAI')),
-      bottomNavigationBar: const BottomBannerAd(),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '¿Qué quieres analizar?',
-                style: theme.textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 32),
-              _ScanOptionCard(
-                icon: Icons.receipt_long,
-                title: 'Escanear ticket',
-                subtitle: 'Analiza la saludabilidad de tu compra',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const ScanScreen(mode: ScanMode.ticket),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _ScanOptionCard(
-                icon: Icons.inventory_2,
-                title: 'Escanear producto',
-                subtitle: 'Consulta la información nutricional de un producto',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const ScanScreen(mode: ScanMode.product),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _ScanOptionCard(
-                icon: Icons.shopping_cart_outlined,
-                title: 'Listas de compra',
-                subtitle: 'Consulta tus listas de la compra sugeridas',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const ShoppingListsScreen(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      appBar: AppBar(
+        title: const Text('eatSmartAI'),
+        actions: const [
+          CreditsChip(),
+          SizedBox(width: 8),
+        ],
       ),
-    );
-  }
-}
-
-class _ScanOptionCard extends StatelessWidget {
-  const _ScanOptionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
+      extendBody: true,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        children: [
+          const ScanScreen(mode: ScanMode.ticket, embedded: true),
+          const ScanScreen(mode: ScanMode.product, embedded: true),
+          ShoppingListsScreen(key: _listsKey, embedded: true),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  shape: BoxShape.circle,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.shadow.withValues(alpha: 0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
                 ),
-                child: Icon(
-                  icon,
-                  size: 36,
-                  color: theme.colorScheme.onPrimaryContainer,
-                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: NavigationBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                selectedIndex: _currentIndex,
+                onDestinationSelected: _onDestinationSelected,
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.receipt_long_outlined),
+                    selectedIcon: Icon(Icons.receipt_long),
+                    label: 'Ticket',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.inventory_2_outlined),
+                    selectedIcon: Icon(Icons.inventory_2),
+                    label: 'Producto',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.shopping_cart_outlined),
+                    selectedIcon: Icon(Icons.shopping_cart),
+                    label: 'Listas',
+                  ),
+                ],
               ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ],
+            ),
           ),
         ),
       ),

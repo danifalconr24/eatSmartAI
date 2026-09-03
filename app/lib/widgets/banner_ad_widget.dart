@@ -3,16 +3,16 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../ads/ad_service.dart';
 
-/// Bottom banner ad. Renders nothing until the ad is loaded, and renders
-/// nothing at all if loading fails (e.g. offline).
-class BottomBannerAd extends StatefulWidget {
-  const BottomBannerAd({super.key});
+/// Banner de AdMob reutilizable. No renderiza nada hasta que el anuncio se
+/// carga, ni tampoco si la carga falla (p. ej. sin conexión).
+class BannerAdWidget extends StatefulWidget {
+  const BannerAdWidget({super.key});
 
   @override
-  State<BottomBannerAd> createState() => _BottomBannerAdState();
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
 }
 
-class _BottomBannerAdState extends State<BottomBannerAd> {
+class _BannerAdWidgetState extends State<BannerAdWidget> {
   BannerAd? _banner;
 
   @override
@@ -40,13 +40,10 @@ class _BottomBannerAdState extends State<BottomBannerAd> {
   Widget build(BuildContext context) {
     final banner = _banner;
     if (banner == null) return const SizedBox.shrink();
-    return SafeArea(
-      top: false,
-      child: SizedBox(
-        width: banner.size.width.toDouble(),
-        height: banner.size.height.toDouble(),
-        child: AdWidget(ad: banner),
-      ),
+    return SizedBox(
+      width: banner.size.width.toDouble(),
+      height: banner.size.height.toDouble(),
+      child: AdWidget(ad: banner),
     );
   }
 }

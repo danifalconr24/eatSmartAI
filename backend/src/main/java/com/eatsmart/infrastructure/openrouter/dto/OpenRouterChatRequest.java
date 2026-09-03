@@ -16,6 +16,14 @@ public record OpenRouterChatRequest(List<String> models, List<Message> messages,
         public static Message user(List<Content> content) {
             return new Message("user", content);
         }
+
+        public static Message system(String text) {
+            return new Message("system", List.of(Content.text(text)));
+        }
+
+        public static Message assistant(String text) {
+            return new Message("assistant", List.of(Content.text(text)));
+        }
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

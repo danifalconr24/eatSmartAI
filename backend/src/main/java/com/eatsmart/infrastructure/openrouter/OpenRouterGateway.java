@@ -7,10 +7,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import com.eatsmart.application.port.ChatGateway;
 import com.eatsmart.application.port.ProductAnalysisGateway;
 import com.eatsmart.application.port.ReceiptAnalysisGateway;
 import com.eatsmart.application.port.ShoppingListGenerationGateway;
 import com.eatsmart.domain.exception.AnalysisException;
+import com.eatsmart.domain.model.ChatMessage;
 import com.eatsmart.infrastructure.openrouter.dto.OpenRouterChatRequest;
 import com.eatsmart.infrastructure.openrouter.dto.OpenRouterChatResponse;
 
@@ -26,9 +28,9 @@ import jakarta.ws.rs.WebApplicationException;
  * classifiers) that return unusable answers.
  */
 @ApplicationScoped
-@Priority(1)
+@Priority(2)
 public class OpenRouterGateway
-        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway {
+        implements ReceiptAnalysisGateway, ProductAnalysisGateway, ShoppingListGenerationGateway, ChatGateway {
 
     private static final Logger LOG = Logger.getLogger(OpenRouterGateway.class);
     private static final double TEMPERATURE = 0.3;
@@ -72,6 +74,23 @@ public class OpenRouterGateway
                         OpenRouterChatRequest.Content.text(prompt)))),
                 TEMPERATURE);
         return call(request);
+    }
+
+    @Override
+    public String chat(String systemPrompt, List<ChatMessage> history, String question) throws AnalysisException {
+        List<OpenRouterChatRequest.Message> messages = new java.util.ArrayList<>();
+        messages.add(OpenRouterChatRequest.Message.system(systemPrompt));
+        for (ChatMessage message : history) {
+            if (ChatMessage.ROLE_ASSISTANT.equals(message.role())) {
+                messages.add(OpenRouterChatRequest.Message.assistant(message.content()));
+            } else {
+                messages.add(OpenRouterChatRequest.Message.user(List.of(
+                        OpenRouterChatRequest.Content.text(message.content()))));
+            }
+        }
+        messages.add(OpenRouterChatRequest.Message.user(List.of(
+                OpenRouterChatRequest.Content.text(question))));
+        return call(new OpenRouterChatRequest(models, messages, TEMPERATURE));
     }
 
     private String call(OpenRouterChatRequest request) throws AnalysisException {

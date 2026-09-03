@@ -77,6 +77,95 @@ class ShoppingListResult {
   final List<ShoppingListItemResult> items;
 }
 
+/// Un mensaje del chat con el nutricionista ('user' o 'assistant').
+class ChatMessage {
+  ChatMessage({required this.role, required this.content});
+
+  final String role;
+  final String content;
+
+  Map<String, dynamic> toJson() => {'role': role, 'content': content};
+}
+
+/// Contexto del análisis sobre el que versa el chat: ticket (products +
+/// suggestions) o producto (product + nutrition). El backend es stateless:
+/// se envía en cada petición.
+class ChatContextData {
+  ChatContextData({
+    this.products,
+    this.suggestions,
+    this.product,
+    this.nutrition,
+    this.score,
+    required this.goal,
+    required this.budgetMatters,
+    required this.allergies,
+    required this.dietPreference,
+  });
+
+  /// Chat sobre análisis de ticket.
+  factory ChatContextData.receipt({
+    required List<String> products,
+    required String suggestions,
+    required int score,
+    required String goal,
+    required bool budgetMatters,
+    required String allergies,
+    required String dietPreference,
+  }) =>
+      ChatContextData(
+        products: products,
+        suggestions: suggestions,
+        score: score,
+        goal: goal,
+        budgetMatters: budgetMatters,
+        allergies: allergies,
+        dietPreference: dietPreference,
+      );
+
+  /// Chat sobre análisis de producto.
+  factory ChatContextData.product({
+    required String product,
+    required String nutrition,
+    required int score,
+    required String goal,
+    required bool budgetMatters,
+    required String allergies,
+    required String dietPreference,
+  }) =>
+      ChatContextData(
+        product: product,
+        nutrition: nutrition,
+        score: score,
+        goal: goal,
+        budgetMatters: budgetMatters,
+        allergies: allergies,
+        dietPreference: dietPreference,
+      );
+
+  final List<String>? products;
+  final String? suggestions;
+  final String? product;
+  final String? nutrition;
+  final int? score;
+  final String goal;
+  final bool budgetMatters;
+  final String allergies;
+  final String dietPreference;
+
+  Map<String, dynamic> toJson() => {
+        if (products != null) 'products': products,
+        if (suggestions != null) 'suggestions': suggestions,
+        if (product != null) 'product': product,
+        if (nutrition != null) 'nutrition': nutrition,
+        if (score != null) 'score': score,
+        'goal': goal,
+        'budgetMatters': budgetMatters,
+        'allergies': allergies,
+        'dietPreference': dietPreference,
+      };
+}
+
 class ApiClient {
   ApiClient()
       : _dio = Dio(BaseOptions(
@@ -210,6 +299,37 @@ class ApiClient {
         }
       }
       return ShoppingListResult(items: items);
+    } on DioException catch (e) {
+      final serverMessage = _extractErrorMessage(e);
+      if (serverMessage != null) throw ApiException(serverMessage);
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout) {
+        throw ApiException(
+            'No se pudo conectar con el servidor. Comprueba que el backend está en marcha.');
+      }
+      throw ApiException('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+    }
+  }
+
+  /// Envía una pregunta al nutricionista sobre un análisis previo.
+  /// [history] contiene los turnos anteriores de la conversación (sin la
+  /// pregunta actual); el backend no guarda estado.
+  Future<String> askNutritionist({
+    required ChatContextData context,
+    required List<ChatMessage> history,
+    required String question,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/chat',
+        data: {
+          ...context.toJson(),
+          'messages': history.map((m) => m.toJson()).toList(),
+          'question': question,
+        },
+      );
+      final data = response.data ?? {};
+      return data['answer']?.toString() ?? '';
     } on DioException catch (e) {
       final serverMessage = _extractErrorMessage(e);
       if (serverMessage != null) throw ApiException(serverMessage);

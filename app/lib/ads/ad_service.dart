@@ -60,15 +60,15 @@ class AdService {
 
   /// Shows a rewarded ad and waits until it is closed or the reward is earned.
   ///
-  /// Returns `true` when the user earned the reward (or the ad could not be
-  /// shown, so the flow is not blocked) and `false` only if the user closed
-  /// the ad before earning the reward.
+  /// Returns `true` only when the user earned the reward. Returns `false`
+  /// when no ad is available (offline, no fill...) or the user closed the ad
+  /// before earning the reward; the UI decides how to inform the user.
   Future<bool> showRewarded() async {
     final ad = _rewardedAd;
     if (ad == null) {
-      // No ad available (offline, no fill...): don't block the user.
+      // No ad available (offline, no fill...): nothing to grant.
       preloadRewarded();
-      return true;
+      return false;
     }
     _rewardedAd = null;
 
@@ -85,7 +85,7 @@ class AdService {
         debugPrint('AdService: rewarded failed to show: $error');
         ad.dispose();
         preloadRewarded();
-        if (!completer.isCompleted) completer.complete(true);
+        if (!completer.isCompleted) completer.complete(false);
       },
     );
 
@@ -97,7 +97,7 @@ class AdService {
       );
     } catch (e) {
       debugPrint('AdService: rewarded show threw: $e');
-      if (!completer.isCompleted) completer.complete(true);
+      if (!completer.isCompleted) completer.complete(false);
     }
 
     return completer.future;
