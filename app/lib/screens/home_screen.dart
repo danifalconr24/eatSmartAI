@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/credits_chip.dart';
+import '../widgets/floating_nav_space.dart';
 import 'scan_screen.dart';
 import 'shopping_lists_screen.dart';
 
@@ -14,10 +16,30 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   final GlobalKey<ShoppingListsScreenState> _listsKey =
       GlobalKey<ShoppingListsScreenState>();
+  final GlobalKey _navBarKey = GlobalKey();
+  final ValueNotifier<double> _navBarHeight = ValueNotifier(0);
   int _currentIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureNavBar());
+  }
+
+  /// Mide la altura real de la barra flotante (SafeArea + margen + barra) y
+  /// la publica para que las pantallas incrustadas dejen el hueco exacto.
+  void _measureNavBar() {
+    final box = _navBarKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || !mounted) return;
+    final height = box.size.height;
+    if (height > 0 && height != _navBarHeight.value) {
+      _navBarHeight.value = height;
+    }
+  }
+
+  @override
   void dispose() {
+    _navBarHeight.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -41,18 +63,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('eatSmartAI')),
-      extendBody: true,
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        children: [
-          const ScanScreen(mode: ScanMode.ticket, embedded: true),
-          const ScanScreen(mode: ScanMode.product, embedded: true),
-          ShoppingListsScreen(key: _listsKey, embedded: true),
+      appBar: AppBar(
+        title: const Text('eatSmartAI'),
+        actions: const [
+          CreditsChip(),
+          SizedBox(width: 8),
         ],
       ),
+      extendBody: true,
+      body: FloatingNavSpace(
+        height: _navBarHeight,
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          children: [
+            const ScanScreen(mode: ScanMode.ticket, embedded: true),
+            const ScanScreen(mode: ScanMode.product, embedded: true),
+            ShoppingListsScreen(key: _listsKey, embedded: true),
+          ],
+        ),
+      ),
       bottomNavigationBar: SafeArea(
+        key: _navBarKey,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: DecoratedBox(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../ads/credit_service.dart';
 import '../api_client.dart';
 import '../data/chat_session.dart';
 import '../data/shopping_list_repository.dart';
 import '../models/shopping_list.dart';
+import '../widgets/credits_dialog.dart';
 import '../widgets/markdown_sections.dart';
 import '../widgets/score_header.dart';
 import 'chat_screen.dart';
@@ -56,6 +58,13 @@ class _ResultScreenState extends State<ResultScreen> {
   Future<void> _generateShoppingList() async {
     setState(() => _generating = true);
     try {
+      // Solo se comprueba el saldo aquí: el crédito se descuenta cuando la
+      // lista se ha generado con éxito (si falla, no se cobra).
+      if (!CreditService.instance.hasCredits) {
+        final earned = await showNoCreditsDialog(context);
+        if (!mounted || !earned) return;
+        if (!CreditService.instance.hasCredits) return;
+      }
       final generated = await ApiClient().generateShoppingList(
         products: widget.result.products,
         suggestions: widget.result.suggestions,
@@ -79,6 +88,8 @@ class _ResultScreenState extends State<ResultScreen> {
         ],
       );
       await _repository.save(list);
+      // Cobrar el crédito solo tras generar y guardar la lista con éxito.
+      await CreditService.instance.spendCredit();
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -100,8 +111,22 @@ class _ResultScreenState extends State<ResultScreen> {
     final theme = Theme.of(context);
     final result = widget.result;
     final sections = parseMarkdownSections(result.suggestions);
-    return Scaffold(
-      appBar: AppBar(
+    // Intercepta también el gesto/botón atrás del sistema: siempre va a la
+    // pantalla principal, nunca de vuelta al formulario.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          // Volver lleva siempre a la pantalla principal, no al formulario.
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () =>
+                Navigator.of(context).popUntil((route) => route.isFirst),
+          ),
         title: const Text('Tu análisis'),
         actions: [
           TextButton.icon(
@@ -194,6 +219,7 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

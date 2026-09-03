@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../data/shopping_list_repository.dart';
 import '../models/shopping_list.dart';
+import '../widgets/banner_ad_widget.dart';
+import '../widgets/floating_nav_space.dart';
 import 'shopping_list_detail_screen.dart';
 
 /// Historial de listas de la compra guardadas en el dispositivo.
@@ -78,11 +80,11 @@ class ShoppingListsScreenState extends State<ShoppingListsScreen>
 
   Widget _buildBody(BuildContext context) {
     final theme = Theme.of(context);
+    final Widget content;
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_lists.isEmpty) {
-      return Center(
+      content = const Center(child: CircularProgressIndicator());
+    } else if (_lists.isEmpty) {
+      content = Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
@@ -94,12 +96,27 @@ class ShoppingListsScreenState extends State<ShoppingListsScreen>
           ),
         ),
       );
+    } else {
+      content = _buildList();
     }
+    return Column(
+      children: [
+        const Center(child: BannerAdWidget()),
+        Expanded(child: content),
+      ],
+    );
+  }
+
+  Widget _buildList() {
     return ListView.builder(
       // Espacio inferior extra para que la barra de navegación flotante
       // de HomeScreen no tape la última tarjeta cuando está incrustada.
       padding: EdgeInsets.fromLTRB(
-          8, 8, 8, widget.embedded ? 120 : 8),
+        8,
+        8,
+        8,
+        widget.embedded ? FloatingNavSpace.of(context) + 16 : 8,
+      ),
       itemCount: _lists.length,
       itemBuilder: (context, index) {
         final list = _lists[index];

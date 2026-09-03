@@ -53,6 +53,14 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// Respuesta de negocio válida del backend indicando que la imagen no sirve
+/// ("ticket no legible", "producto no reconocible"...). Es un HTTP 400: la
+/// petición consumió análisis del servicio, así que cuenta como uso (gasta
+/// crédito), a diferencia de un fallo técnico (502/red), que no lo gasta.
+class UnreadableImageException extends ApiException {
+  UnreadableImageException(super.message);
+}
+
 class ShoppingListItemResult {
   ShoppingListItemResult({
     required this.name,
@@ -206,14 +214,7 @@ class ApiClient {
         score: (data['score'] as num?)?.round().clamp(0, 10) ?? 0,
       );
     } on DioException catch (e) {
-      final serverMessage = _extractErrorMessage(e);
-      if (serverMessage != null) throw ApiException(serverMessage);
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout) {
-        throw ApiException(
-            'No se pudo conectar con el servidor. Comprueba que el backend está en marcha.');
-      }
-      throw ApiException('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+      throw _mapError(e);
     }
   }
 
@@ -251,14 +252,7 @@ class ApiClient {
             : null,
       );
     } on DioException catch (e) {
-      final serverMessage = _extractErrorMessage(e);
-      if (serverMessage != null) throw ApiException(serverMessage);
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout) {
-        throw ApiException(
-            'No se pudo conectar con el servidor. Comprueba que el backend está en marcha.');
-      }
-      throw ApiException('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+      throw _mapError(e);
     }
   }
 
@@ -300,14 +294,7 @@ class ApiClient {
       }
       return ShoppingListResult(items: items);
     } on DioException catch (e) {
-      final serverMessage = _extractErrorMessage(e);
-      if (serverMessage != null) throw ApiException(serverMessage);
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout) {
-        throw ApiException(
-            'No se pudo conectar con el servidor. Comprueba que el backend está en marcha.');
-      }
-      throw ApiException('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+      throw _mapError(e);
     }
   }
 
@@ -331,15 +318,27 @@ class ApiClient {
       final data = response.data ?? {};
       return data['answer']?.toString() ?? '';
     } on DioException catch (e) {
-      final serverMessage = _extractErrorMessage(e);
-      if (serverMessage != null) throw ApiException(serverMessage);
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout) {
-        throw ApiException(
-            'No se pudo conectar con el servidor. Comprueba que el backend está en marcha.');
-      }
-      throw ApiException('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+      throw _mapError(e);
     }
+  }
+
+  /// Traduce un error HTTP/red a la excepción de dominio correspondiente.
+  /// Un 400 del backend es una respuesta de negocio ("imagen no válida"):
+  /// se mapea a [UnreadableImageException]. El resto son fallos técnicos.
+  ApiException _mapError(DioException e) {
+    final serverMessage = _extractErrorMessage(e);
+    if (serverMessage != null) {
+      if (e.response?.statusCode == 400) {
+        return UnreadableImageException(serverMessage);
+      }
+      return ApiException(serverMessage);
+    }
+    if (e.type == DioExceptionType.connectionError ||
+        e.type == DioExceptionType.connectionTimeout) {
+      return ApiException(
+          'No se pudo conectar con el servidor. Comprueba que el backend está en marcha.');
+    }
+    return ApiException('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
   }
 
   String? _extractErrorMessage(DioException e) {

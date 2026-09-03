@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ScoreHeader extends StatelessWidget {
-  const ScoreHeader({
-    super.key,
-    required this.score,
-    required this.label,
-  });
+  const ScoreHeader({super.key, required this.score, required this.label});
 
   final int score;
   final String label;
@@ -68,11 +64,16 @@ class ScoreHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          Text(
-            '$score/10',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
+          // Que el número se reduzca antes de desbordar en pantallas
+          // estrechas o con tamaños de fuente del sistema grandes.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '$score/10',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
           ),
         ],

@@ -75,7 +75,10 @@ public class AnalyzeProductUseCase {
             LOG.error("No hay ningún proveedor de análisis configurado");
             throw new AnalysisException("El servicio de análisis no está configurado en el servidor.", null);
         }
-        throw lastError;
+        // Mensaje genérico para el usuario: los detalles del proveedor solo
+        // van al log (causa encadenada), nunca a la respuesta de la API.
+        throw new AnalysisException(
+                "No se pudo completar el análisis. Inténtalo de nuevo en unos minutos.", lastError);
     }
 
     private static ProductAnalyzeResponse dropAlternativeIfHealthy(ProductAnalyzeResponse response) {
