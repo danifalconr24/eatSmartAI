@@ -13,8 +13,8 @@ Future<bool> showNoCreditsDialog(BuildContext context) async {
     context: context,
     builder: (dialogContext) => AlertDialog(
       title: const Text('Sin créditos'),
-      content: Text(
-          'Necesitas 1 crédito para esta acción.\n\nMira un vídeo y gana ${CreditService.creditsPerReward} créditos.'),
+      content: const Text(
+          'Necesitas 1 crédito para esta acción.\n\nMira un vídeo y gana créditos.'),
       actionsAlignment: MainAxisAlignment.end,
       actions: [
         TextButton(
@@ -38,15 +38,14 @@ Future<bool> showNoCreditsDialog(BuildContext context) async {
   );
   if (watch != true || !context.mounted) return false;
 
-  final earned = await AdService.instance.showRewarded();
+  final creditsEarned = await AdService.instance.showRewarded();
   if (!context.mounted) return false;
-  if (earned) {
-    await CreditService.instance.addCredits();
+  if (creditsEarned > 0) {
+    await CreditService.instance.addCredits(creditsEarned);
     if (!context.mounted) return false;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text('¡Has ganado ${CreditService.creditsPerReward} créditos!'),
+        content: Text('¡Has ganado $creditsEarned créditos!'),
       ),
     );
     return true;

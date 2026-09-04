@@ -27,7 +27,7 @@ The app is monetized with Google AdMob:
 
 - **1 credit =** 1 receipt/product scan **or** 1 shopping list generation.
 - New users start with `INITIAL_CREDITS` (default **1**).
-- Each fully watched rewarded video grants `CREDITS_PER_REWARD` (default **3**).
+- Each fully watched rewarded video grants the amount configured in the **AdMob rewarded ad unit** (reward amount). If AdMob returns `0` or an invalid amount, the app falls back to `CREDITS_PER_REWARD` (default **3**).
 
 ```bash
 flutter run \
@@ -143,6 +143,37 @@ flutter build ios
 # Web
 flutter build web
 ```
+
+## Configuration overrides
+
+All runtime overrides are applied via `--dart-define=KEY=value`:
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `BACKEND_URL` | `String` | `http://10.0.2.2:8080` | Base URL of the eatSmart backend. Use `http://localhost:8080` for iOS simulator or `http://<LAN-IP>:8080` for physical devices. |
+| `SHOW_AD_PLACEHOLDER` | `bool` | `true` | Shows a debug "Ad" placeholder while a banner is loading or when it fails. Set to `false` to hide the placeholder (release builds already hide it on failure). |
+| `CREDITS_PER_REWARD` | `int` | `3` | Fallback credits granted for each rewarded video, used only when the AdMob ad unit reward amount is missing or `0`. Set the real value in the AdMob console. |
+| `INITIAL_CREDITS` | `int` | `1` | Starting credit balance for new users (first launch only). |
+
+Example combining all overrides:
+
+```bash
+flutter run \
+  --dart-define=BACKEND_URL=http://192.168.1.42:8080 \
+  --dart-define=SHOW_AD_PLACEHOLDER=false \
+  --dart-define=CREDITS_PER_REWARD=5 \
+  --dart-define=INITIAL_CREDITS=2
+```
+
+### Hard-coded AdMob IDs
+
+Production AdMob IDs live in code (not configurable via `--dart-define`):
+
+- Banner + rewarded ad units: `lib/ads/ad_service.dart`
+- Android app ID: `android/app/src/main/AndroidManifest.xml`
+- iOS app ID: `ios/Runner/Info.plist`
+
+Update those files directly when AdMob console generates new IDs.
 
 ## Backend
 
