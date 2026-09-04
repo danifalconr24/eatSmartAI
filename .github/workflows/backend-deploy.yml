@@ -80,16 +80,15 @@ jobs:
           source: "backend/"
           target: ${{ secrets.VPS_DEPLOY_PATH }}
 
-      - name: Deploy with Docker Compose
+      - name: Deploy backend service
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd "${{ secrets.VPS_DEPLOY_PATH }}/backend"
-            docker compose down
-            docker compose up -d --build
+            cd "${{ secrets.VPS_DEPLOY_PATH }}"
+            docker compose up -d --build backend
             docker system prune -f
 
       - name: Health check
