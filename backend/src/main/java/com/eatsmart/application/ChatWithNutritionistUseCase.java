@@ -47,25 +47,28 @@ public class ChatWithNutritionistUseCase {
         AnalysisException lastError = null;
         for (ChatGateway gateway : gatewayByPriority()) {
             if (!gateway.isEnabled()) {
-                LOG.debugf("Proveedor %s deshabilitado (sin configurar), se omite", gateway.name());
+                LOG.debugf("Provider %s disabled, skipping", gateway.name());
                 continue;
             }
             anyEnabled = true;
             try {
-                LOG.infof("Respondiendo duda de chat con %s (%d mensajes previos)", gateway.name(), history.size());
-                return gateway.chat(systemPrompt, history, question);
+                LOG.infof("Answering chat question with %s (%d previous messages)", gateway.name(), history.size());
+                long start = System.nanoTime();
+                String answer = gateway.chat(systemPrompt, history, question);
+                long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+                LOG.infof("Chat answered successfully with %s in %d ms (answerLength=%d)",
+                        gateway.name(), elapsedMs, answer.length());
+                return answer;
             } catch (AnalysisException e) {
-                LOG.warnf(e, "Falló el proveedor %s, probando el siguiente", gateway.name());
+                LOG.warnf(e, "Provider %s failed, trying next", gateway.name());
                 lastError = e;
             }
         }
 
         if (!anyEnabled) {
-            LOG.error("No hay ningún proveedor de análisis configurado");
+            LOG.error("No analysis provider configured");
             throw new AnalysisException("El servicio de análisis no está configurado en el servidor.", null);
         }
-        // Mensaje genérico para el usuario: los detalles del proveedor solo
-        // van al log (causa encadenada), nunca a la respuesta de la API.
         throw new AnalysisException(
                 "No se pudo obtener respuesta. Inténtalo de nuevo en unos minutos.", lastError);
     }

@@ -22,9 +22,9 @@ import jakarta.inject.Inject;
  *
  * Same orchestration as {@link AnalyzeReceiptUseCase}: gateways are tried in
  * {@link Priority} order, disabled providers are skipped and technical
-     * failures ({@link AnalysisException}) fall back to the next one. There is no
-     * image involved, so the text-only {@link ShoppingListGenerationGateway#generateText}
-     * port method is used.
+ * failures ({@link AnalysisException}) fall back to the next one. There is no
+ * image involved, so the text-only {@link ShoppingListGenerationGateway#generateText}
+ * port method is used.
  */
 @ApplicationScoped
 public class GenerateShoppingListUseCase {
@@ -49,26 +49,30 @@ public class GenerateShoppingListUseCase {
         AnalysisException lastError = null;
         for (ShoppingListGenerationGateway gateway : gatewayByPriority()) {
             if (!gateway.isEnabled()) {
-                LOG.debugf("Proveedor %s deshabilitado (sin configurar), se omite", gateway.name());
+                LOG.debugf("Provider %s disabled, skipping", gateway.name());
                 continue;
             }
             anyEnabled = true;
             try {
-                LOG.infof("Generando lista de la compra con %s (%d productos)", gateway.name(), products.size());
+                LOG.infof("Generating shopping list with %s (%d products)", gateway.name(), products.size());
+                long start = System.nanoTime();
                 String rawText = gateway.generateText(prompt);
-                return resultParser.parse(rawText);
+                ShoppingList result = resultParser.parse(rawText);
+                long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+                int items = result.categories().stream().mapToInt(c -> c.items().size()).sum();
+                LOG.infof("Shopping list generated successfully with %s in %d ms (categories=%d, items=%d)",
+                        gateway.name(), elapsedMs, result.categories().size(), items);
+                return result;
             } catch (AnalysisException e) {
-                LOG.warnf(e, "Falló el proveedor %s, probando el siguiente", gateway.name());
+                LOG.warnf(e, "Provider %s failed, trying next", gateway.name());
                 lastError = e;
             }
         }
 
         if (!anyEnabled) {
-            LOG.error("No hay ningún proveedor de análisis configurado");
+            LOG.error("No analysis provider configured");
             throw new AnalysisException("El servicio de análisis no está configurado en el servidor.", null);
         }
-        // Mensaje genérico para el usuario: los detalles del proveedor solo
-        // van al log (causa encadenada), nunca a la respuesta de la API.
         throw new AnalysisException(
                 "No se pudo generar la lista. Inténtalo de nuevo en unos minutos.", lastError);
     }

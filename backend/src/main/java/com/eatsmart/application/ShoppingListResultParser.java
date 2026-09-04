@@ -31,6 +31,7 @@ import jakarta.inject.Inject;
 public class ShoppingListResultParser {
 
     private static final Logger LOG = Logger.getLogger(ShoppingListResultParser.class);
+    private static final int MAX_LOG_RAW = 500;
 
     @Inject
     ObjectMapper mapper;
@@ -38,7 +39,7 @@ public class ShoppingListResultParser {
     public ShoppingList parse(String text) throws AnalysisException {
         JsonNode root = parseJsonObject(text);
         if (root == null) {
-            LOG.warnf("El texto del proveedor no es JSON válido: %s", text);
+            LOG.warnf("Provider response is not valid JSON: %s", truncate(text));
             throw new AnalysisException("El proveedor devolvió una respuesta no interpretable.", null);
         }
 
@@ -62,7 +63,7 @@ public class ShoppingListResultParser {
             throws AnalysisException {
         String name = node.path("name").asText("");
         if (!ShoppingListCategory.ALLOWED_NAMES.contains(name)) {
-            LOG.warnf("Categoría no permitida del proveedor: '%s' en %s", name, raw);
+            LOG.warnf("Provider returned disallowed category '%s' in %s", name, truncate(raw));
             throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
         }
         JsonNode items = node.path("items");
@@ -83,7 +84,7 @@ public class ShoppingListResultParser {
             throw incomplete(raw);
         }
         if (!seenNames.add(name.toLowerCase(Locale.ROOT))) {
-            LOG.warnf("Artículo duplicado del proveedor: '%s'", name);
+            LOG.warnf("Provider returned duplicate item '%s'", name);
             throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
         }
 
@@ -98,18 +99,18 @@ public class ShoppingListResultParser {
         String reason = node.path("reason").isTextual() ? node.path("reason").asText().trim() : null;
         if (type == ShoppingListItemType.REPLACE) {
             if (replaces == null || replaces.isEmpty() || reason == null || reason.isEmpty()) {
-                LOG.warnf("REPLACE sin 'replaces'/'reason': %s", node);
+                LOG.warnf("REPLACE item missing 'replaces'/'reason': %s", node);
                 throw incomplete(raw);
             }
         } else if (replaces != null || reason != null) {
-            LOG.warnf("%s no debe tener 'replaces'/'reason': %s", type, node);
+            LOG.warnf("%s item must not have 'replaces'/'reason': %s", type, node);
             throw incomplete(raw);
         }
         return new ShoppingListItem(name, type, replaces, reason);
     }
 
     private AnalysisException incomplete(String raw) {
-        LOG.warnf("Respuesta del proveedor incompleta o inválida: %s", raw);
+        LOG.warnf("Provider response incomplete or invalid: %s", truncate(raw));
         return new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
     }
 
@@ -131,5 +132,12 @@ public class ShoppingListResultParser {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    private static String truncate(String text) {
+        if (text == null || text.length() <= MAX_LOG_RAW) {
+            return text;
+        }
+        return text.substring(0, MAX_LOG_RAW) + "...";
     }
 }

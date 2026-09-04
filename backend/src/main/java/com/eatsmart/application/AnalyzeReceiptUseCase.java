@@ -50,28 +50,33 @@ public class AnalyzeReceiptUseCase {
         AnalysisException lastError = null;
         for (ReceiptAnalysisGateway gateway : gatewayByPriority()) {
             if (!gateway.isEnabled()) {
-                LOG.debugf("Proveedor %s deshabilitado (sin configurar), se omite", gateway.name());
+                LOG.debugf("Provider %s disabled, skipping", gateway.name());
                 continue;
             }
             anyEnabled = true;
             try {
-                LOG.infof("Analizando ticket con %s (%d bytes de imagen)", gateway.name(), imageBytes.length);
+                LOG.infof("Analyzing receipt with %s (%d image bytes)", gateway.name(), imageBytes.length);
+                long start = System.nanoTime();
                 String rawText = gateway.analyze(imageBytes, mimeType, prompt);
-                return resultParser.parse(rawText);
+                AnalyzeResponse result = resultParser.parse(rawText);
+                long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+                LOG.infof("Receipt analyzed successfully with %s in %d ms (products=%d, score=%d)",
+                        gateway.name(), elapsedMs, result.products().size(), result.score());
+                return result;
             } catch (UnreadableReceiptException e) {
                 throw e;
             } catch (AnalysisException e) {
-                LOG.warnf(e, "Falló el proveedor %s, probando el siguiente", gateway.name());
+                LOG.warnf(e, "Provider %s failed, trying next", gateway.name());
                 lastError = e;
             }
         }
 
         if (!anyEnabled) {
-            LOG.error("No hay ningún proveedor de análisis configurado");
+            LOG.error("No analysis provider configured");
             throw new AnalysisException("El servicio de análisis no está configurado en el servidor.", null);
         }
-        // Mensaje genérico para el usuario: los detalles del proveedor solo
-        // van al log (causa encadenada), nunca a la respuesta de la API.
+        // Generic user-facing message: provider details go to the log (chained cause),
+        // never to the API response.
         throw new AnalysisException(
                 "No se pudo completar el análisis. Inténtalo de nuevo en unos minutos.", lastError);
     }

@@ -34,6 +34,7 @@ public class OpenRouterGateway
 
     private static final Logger LOG = Logger.getLogger(OpenRouterGateway.class);
     private static final double TEMPERATURE = 0.3;
+    private static final int MAX_LOG_BODY = 500;
 
     @ConfigProperty(name = "openrouter.api.key")
     String apiKey;
@@ -95,23 +96,28 @@ public class OpenRouterGateway
 
     private String call(OpenRouterChatRequest request) throws AnalysisException {
         OpenRouterChatResponse response;
+        long start = System.nanoTime();
         try {
             response = client.chat(request);
         } catch (WebApplicationException e) {
-            LOG.warnf("OpenRouter respondió %d: %s",
-                    e.getResponse() != null ? e.getResponse().getStatus() : -1, responseBody(e));
+            int status = e.getResponse() != null ? e.getResponse().getStatus() : -1;
+            LOG.warnf("OpenRouter returned HTTP %d: %s", status, truncate(responseBody(e)));
             throw new AnalysisException("OpenRouter rechazó la petición de análisis.", e);
         } catch (Exception e) {
-            // Cualquier fallo técnico (timeout, transporte, serialización) dispara el fallback.
-            LOG.warn("Error de comunicación con OpenRouter", e);
+            // Any technical failure (timeout, transport, serialization) triggers fallback.
+            LOG.warn("Communication error with OpenRouter", e);
             throw new AnalysisException("No se pudo conectar con OpenRouter.", e);
+        } finally {
+            long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+            LOG.debugf("OpenRouter request completed in %d ms", elapsedMs);
         }
 
         String content = response != null ? response.firstContent() : null;
         if (content == null || content.isBlank()) {
+            LOG.warn("OpenRouter returned an empty response");
             throw new AnalysisException("OpenRouter devolvió una respuesta vacía.", null);
         }
-        LOG.infof("OpenRouter respondió vía modelo '%s'", response.model());
+        LOG.infof("OpenRouter answered via model '%s'", response.model());
         return content;
     }
 
@@ -121,5 +127,12 @@ public class OpenRouterGateway
         } catch (RuntimeException ignored) {
             return "";
         }
+    }
+
+    private static String truncate(String text) {
+        if (text == null || text.length() <= MAX_LOG_BODY) {
+            return text;
+        }
+        return text.substring(0, MAX_LOG_BODY) + "...";
     }
 }

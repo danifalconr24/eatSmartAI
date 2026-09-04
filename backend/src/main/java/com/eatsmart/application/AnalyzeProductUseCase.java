@@ -20,8 +20,8 @@ import jakarta.inject.Inject;
 /**
  * Use case: analyze a single supermarket product photo.
  *
-     * Orchestrates the configured {@link ProductAnalysisGateway} providers in
-     * {@link Priority} order, same failover strategy as
+ * Orchestrates the configured {@link ProductAnalysisGateway} providers in
+ * {@link Priority} order, same failover strategy as
  * {@link AnalyzeReceiptUseCase}: technical failures fall through to the next
  * enabled provider; a valid business answer ("not a recognizable product")
  * is never retried.
@@ -55,28 +55,31 @@ public class AnalyzeProductUseCase {
         AnalysisException lastError = null;
         for (ProductAnalysisGateway gateway : gatewayByPriority()) {
             if (!gateway.isEnabled()) {
-                LOG.debugf("Proveedor %s deshabilitado (sin configurar), se omite", gateway.name());
+                LOG.debugf("Provider %s disabled, skipping", gateway.name());
                 continue;
             }
             anyEnabled = true;
             try {
-                LOG.infof("Analizando producto con %s (%d bytes de imagen)", gateway.name(), imageBytes.length);
+                LOG.infof("Analyzing product with %s (%d image bytes)", gateway.name(), imageBytes.length);
+                long start = System.nanoTime();
                 String rawText = gateway.analyze(imageBytes, mimeType, prompt);
-                return dropAlternativeIfHealthy(resultParser.parse(rawText));
+                ProductAnalyzeResponse result = dropAlternativeIfHealthy(resultParser.parse(rawText));
+                long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+                LOG.infof("Product analyzed successfully with %s in %d ms (product=%s, score=%d, alternative=%b)",
+                        gateway.name(), elapsedMs, result.product(), result.score(), result.alternative() != null);
+                return result;
             } catch (UnreadableReceiptException e) {
                 throw e;
             } catch (AnalysisException e) {
-                LOG.warnf(e, "Falló el proveedor %s, probando el siguiente", gateway.name());
+                LOG.warnf(e, "Provider %s failed, trying next", gateway.name());
                 lastError = e;
             }
         }
 
         if (!anyEnabled) {
-            LOG.error("No hay ningún proveedor de análisis configurado");
+            LOG.error("No analysis provider configured");
             throw new AnalysisException("El servicio de análisis no está configurado en el servidor.", null);
         }
-        // Mensaje genérico para el usuario: los detalles del proveedor solo
-        // van al log (causa encadenada), nunca a la respuesta de la API.
         throw new AnalysisException(
                 "No se pudo completar el análisis. Inténtalo de nuevo en unos minutos.", lastError);
     }

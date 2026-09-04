@@ -23,6 +23,7 @@ import jakarta.inject.Inject;
 public class AnalysisResultParser {
 
     private static final Logger LOG = Logger.getLogger(AnalysisResultParser.class);
+    private static final int MAX_LOG_RAW = 500;
 
     @Inject
     ObjectMapper mapper;
@@ -30,13 +31,13 @@ public class AnalysisResultParser {
     public AnalyzeResponse parse(String text) throws UnreadableReceiptException, AnalysisException {
         JsonNode result = parseJsonObject(text);
         if (result == null) {
-            LOG.warnf("El texto del proveedor no es JSON válido: %s", text);
+            LOG.warnf("Provider response is not valid JSON: %s", truncate(text));
             throw new AnalysisException("El proveedor devolvió una respuesta no interpretable.", null);
         }
 
         if (result.hasNonNull("error")) {
             String errorMsg = result.path("error").asText();
-            LOG.infof("Ticket no legible según el proveedor: %s", errorMsg);
+            LOG.infof("Receipt unreadable according to provider: %s", errorMsg);
             throw new UnreadableReceiptException(errorMsg);
         }
 
@@ -45,11 +46,11 @@ public class AnalysisResultParser {
             products = mapper.convertValue(result.path("products"),
                     mapper.getTypeFactory().constructCollectionType(List.class, String.class));
         } catch (IllegalArgumentException e) {
-            LOG.warnf("El campo 'products' del proveedor no es una lista válida: %s", text);
+            LOG.warnf("Provider 'products' field is not a valid list: %s", truncate(text));
             throw new AnalysisException("El proveedor devolvió una respuesta no interpretable.", e);
         }
         if (products == null || products.isEmpty()) {
-            LOG.infof("El proveedor no detectó productos ni rechazó la imagen: %s", text);
+            LOG.infof("Provider detected no products and did not reject the image: %s", truncate(text));
             throw new UnreadableReceiptException(
                     "No se detecta un ticket de supermercado en la imagen. Haz una foto clara y completa del ticket de compra e inténtalo de nuevo.");
         }
@@ -59,7 +60,7 @@ public class AnalysisResultParser {
         }
         JsonNode scoreNode = result.path("score");
         if (!scoreNode.isNumber()) {
-            LOG.warnf("El campo 'score' del proveedor no es un número: %s", text);
+            LOG.warnf("Provider 'score' field is not a number: %s", truncate(text));
             throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
         }
         int score = Math.clamp(scoreNode.intValue(), 0, 10);
@@ -84,5 +85,12 @@ public class AnalysisResultParser {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    private static String truncate(String text) {
+        if (text == null || text.length() <= MAX_LOG_RAW) {
+            return text;
+        }
+        return text.substring(0, MAX_LOG_RAW) + "...";
     }
 }
