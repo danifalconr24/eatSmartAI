@@ -95,5 +95,10 @@ jobs:
       - name: Health check
         run: |
           sleep 5
-          curl -sf --retry 10 --retry-delay 5 --retry-connrefused \
-            "${{ secrets.VPS_HEALTH_URL }}"
+          echo "Checking ${{ secrets.VPS_HEALTH_URL }}"
+          HTTP_CODE=$(curl -sS -o /tmp/health_body -w "%{http_code}" \
+            --retry 10 --retry-delay 5 --retry-all-errors \
+            "${{ secrets.VPS_HEALTH_URL }}")
+          echo "HTTP status: $HTTP_CODE"
+          cat /tmp/health_body
+          test "$HTTP_CODE" = "200"
