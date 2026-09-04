@@ -26,8 +26,8 @@ dist/
 npm-debug.log*
 
 # Maven/Gradle
-.mvn/
 .gradle/
+!.mvn/
 
 # Quarkus
 quarkus.log
