@@ -17,6 +17,7 @@ App (run from `app/`):
 ## Backend architecture (non-obvious)
 
 - Hexagonal: `application/` (use cases) → `application/port/` (one driven port per use case: `ReceiptAnalysisGateway`, `ProductAnalysisGateway`, `ShoppingListGenerationGateway`, `ChatGateway`) ← `infrastructure/` (adapters implement all four). Keep new providers behind these ports.
+- **Virtual threads**: all 4 REST resources (`ReceiptResource`, `ProductResource`, `ShoppingListResource`, `ChatResource`) run on virtual threads via class-level `@RunOnVirtualThread` (io.smallrye.common). Endpoints block 3-30s waiting on AI providers, so this removes the worker-pool ceiling (~200 threads) without moving to reactive. Keep blocking code style; add the annotation to any new resource, and verify no carrier pinning with `-Djdk.tracePinnedThreads=full` when adding new blocking calls.
 - **Two AI providers, chained by `@Priority`**: OpenRouter (`@Priority(1)`, primary) → Gemini (`@Priority(2)`, fallback). Failover happens in each use case: technical failures fall through to next enabled gateway; a valid business answer ("unreadable receipt" / "not a recognizable product") is never retried.
 - **Two independent scan features**, each with its own use case, prompt builder, result parser, and REST endpoint:
   - **Ticket scan**: `POST /api/analyze` → `AnalyzeReceiptUseCase` → returns `{products, suggestions, score}`

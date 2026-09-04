@@ -27,6 +27,12 @@ src/main/java/com/eatsmart/
     └── gemini/        # Gemini AI client (fallback)
 ```
 
+## Concurrency model: virtual threads
+
+All REST resources run on virtual threads via class-level `@RunOnVirtualThread`. Endpoints block 3–30s waiting on AI providers, so with the default worker pool (~200 platform threads) high concurrency would queue. Virtual threads lift that ceiling while keeping plain blocking code — no Mutiny/reactive refactor needed. Java 25's JEP 491 (`synchronized` no longer pins carrier threads) makes this safe.
+
+When adding a new resource, add the annotation. When adding new blocking calls, verify no carrier pinning with `./mvnw quarkus:dev -Djdk.tracePinnedThreads=full`.
+
 ## Error contract
 
 Each endpoint returns `ErrorResponse {"message": "..."}` with Spanish, user-facing text:
