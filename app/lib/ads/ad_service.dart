@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'credit_service.dart';
+
 /// Central place for AdMob configuration and rewarded-ad orchestration.
 ///
 /// All ad unit IDs (banner + rewarded, Android + iOS) are real production
@@ -60,44 +62,48 @@ class AdService {
 
   /// Shows a rewarded ad and waits until it is closed or the reward is earned.
   ///
-  /// Returns `true` only when the user earned the reward. Returns `false`
-  /// when no ad is available (offline, no fill...) or the user closed the ad
-  /// before earning the reward; the UI decides how to inform the user.
-  Future<bool> showRewarded() async {
+  /// Returns the number of credits earned (read from the AdMob ad unit
+  /// reward configuration). Returns `0` when no ad is available (offline, no
+  /// fill...) or the user closed the ad before earning the reward.
+  Future<int> showRewarded() async {
     final ad = _rewardedAd;
     if (ad == null) {
       // No ad available (offline, no fill...): nothing to grant.
       preloadRewarded();
-      return false;
+      return 0;
     }
     _rewardedAd = null;
 
-    final completer = Completer<bool>();
-    var earned = false;
+    final completer = Completer<int>();
+    var earnedCredits = 0;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         preloadRewarded();
-        if (!completer.isCompleted) completer.complete(earned);
+        if (!completer.isCompleted) completer.complete(earnedCredits);
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         debugPrint('AdService: rewarded failed to show: $error');
         ad.dispose();
         preloadRewarded();
-        if (!completer.isCompleted) completer.complete(false);
+        if (!completer.isCompleted) completer.complete(0);
       },
     );
 
     try {
       await ad.show(
         onUserEarnedReward: (ad, reward) {
-          earned = true;
+          final amount = reward.amount.toInt();
+          earnedCredits = amount > 0 ? amount : CreditService.creditsPerReward;
+          debugPrint(
+            'AdService: rewarded earned ${reward.amount} ${reward.type} -> $earnedCredits credits',
+          );
         },
       );
     } catch (e) {
       debugPrint('AdService: rewarded show threw: $e');
-      if (!completer.isCompleted) completer.complete(false);
+      if (!completer.isCompleted) completer.complete(0);
     }
 
     return completer.future;

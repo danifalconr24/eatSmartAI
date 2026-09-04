@@ -13,8 +13,9 @@ class CreditService extends ChangeNotifier {
 
   static const String _prefsKey = 'credits_balance';
 
-  /// Créditos que se conceden por cada vídeo con recompensa visto completo.
-  /// Sobreescribible con:
+  /// Valor por defecto de créditos que se conceden por cada vídeo con
+  /// recompensa visto completo. Se usa como fallback cuando la unidad de
+  /// AdMob no devuelve una cantidad de recompensa válida. Sobreescribible con:
   /// flutter run --dart-define=CREDITS_PER_REWARD=5
   static const int creditsPerReward =
       int.fromEnvironment('CREDITS_PER_REWARD', defaultValue: 3);

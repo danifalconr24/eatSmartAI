@@ -19,15 +19,15 @@ class _CreditsChipState extends State<CreditsChip> {
     if (_showingAd) return;
     setState(() => _showingAd = true);
     try {
-      final earned = await AdService.instance.showRewarded();
+      final creditsEarned = await AdService.instance.showRewarded();
       if (!mounted) return;
-      if (earned) {
-        await CreditService.instance.addCredits();
+      if (creditsEarned > 0) {
+        await CreditService.instance.addCredits(creditsEarned);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '¡Has ganado ${CreditService.creditsPerReward} créditos!',
+              '¡Has ganado $creditsEarned créditos!',
             ),
           ),
         );
