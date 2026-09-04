@@ -44,17 +44,18 @@ public class ProductResource {
     public Response analyze(MultipartFormDataInput input) {
         FileItem image = fileValue(input, "image");
         if (image == null) {
-            return badRequest("Falta la imagen del producto. Envía una foto en el campo 'image'.");
+            return badRequest("image", "Falta la imagen del producto. Envía una foto en el campo 'image'.");
         }
 
         String goal = textValue(input, "goal");
         if (goal == null || !VALID_GOALS.contains(goal)) {
-            return badRequest("Objetivo no válido. Valores admitidos: LOSE, MAINTAIN, GAIN.");
+            return badRequest("goal", "Objetivo no válido. Valores admitidos: LOSE, MAINTAIN, GAIN.");
         }
         String diet = textValue(input, "dietPreference");
         diet = diet == null ? "NONE" : diet;
         if (!VALID_DIETS.contains(diet)) {
-            return badRequest("Preferencia dietética no válida. Valores admitidos: NONE, VEGETARIAN, VEGAN, OTHER.");
+            return badRequest("dietPreference",
+                    "Preferencia dietética no válida. Valores admitidos: NONE, VEGETARIAN, VEGAN, OTHER.");
         }
         boolean budgetMatters = Boolean.parseBoolean(textValue(input, "budgetMatters"));
         String allergies = textValue(input, "allergies");
@@ -63,12 +64,12 @@ public class ProductResource {
         byte[] imageBytes;
         try {
             if (image.getFileSize() > MAX_IMAGE_BYTES) {
-                return badRequest("La imagen es demasiado grande (máximo 10 MB).");
+                return badRequest("image", "La imagen es demasiado grande (máximo 10 MB).");
             }
             imageBytes = readImageBytes(image);
         } catch (IOException e) {
-            LOG.error("Error leyendo la imagen subida", e);
-            return badRequest("No se pudo leer la imagen enviada.");
+            LOG.error("Failed to read uploaded image", e);
+            return badRequest("image", "No se pudo leer la imagen enviada.");
         }
 
         try {
@@ -76,10 +77,12 @@ public class ProductResource {
                     imageBytes, "image/jpeg", goal, budgetMatters, allergies, diet);
             return Response.ok(result).build();
         } catch (UnreadableReceiptException e) {
+            LOG.infof("Product rejected by business rule: %s", e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new ErrorResponse(e.getMessage()))
                     .build();
         } catch (AnalysisException e) {
+            LOG.error("Product analysis failed after exhausting providers", e);
             return Response.status(Response.Status.BAD_GATEWAY)
                     .entity(new ErrorResponse(e.getMessage()))
                     .build();
@@ -110,7 +113,8 @@ public class ProductResource {
                 .findFirst().orElse(null);
     }
 
-    private Response badRequest(String message) {
+    private Response badRequest(String field, String message) {
+        LOG.warnf("Bad request rejected [field=%s]", field);
         return Response.status(Response.Status.BAD_REQUEST)
                 .entity(new ErrorResponse(message))
                 .build();

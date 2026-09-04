@@ -22,6 +22,7 @@ import jakarta.inject.Inject;
 public class ProductResultParser {
 
     private static final Logger LOG = Logger.getLogger(ProductResultParser.class);
+    private static final int MAX_LOG_RAW = 500;
 
     @Inject
     ObjectMapper mapper;
@@ -29,13 +30,13 @@ public class ProductResultParser {
     public ProductAnalyzeResponse parse(String text) throws UnreadableReceiptException, AnalysisException {
         JsonNode result = parseJsonObject(text);
         if (result == null) {
-            LOG.warnf("El texto del proveedor no es JSON válido: %s", text);
+            LOG.warnf("Provider response is not valid JSON: %s", truncate(text));
             throw new AnalysisException("El proveedor devolvió una respuesta no interpretable.", null);
         }
 
         if (result.hasNonNull("error")) {
             String errorMsg = result.path("error").asText();
-            LOG.infof("Producto no reconocible según el proveedor: %s", errorMsg);
+            LOG.infof("Product not recognizable according to provider: %s", errorMsg);
             throw new UnreadableReceiptException(errorMsg);
         }
 
@@ -49,7 +50,7 @@ public class ProductResultParser {
         }
         JsonNode scoreNode = result.path("score");
         if (!scoreNode.isNumber()) {
-            LOG.warnf("El campo 'score' del proveedor no es un número: %s", text);
+            LOG.warnf("Provider 'score' field is not a number: %s", truncate(text));
             throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
         }
         int score = Math.clamp(scoreNode.intValue(), 0, 10);
@@ -84,5 +85,12 @@ public class ProductResultParser {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    private static String truncate(String text) {
+        if (text == null || text.length() <= MAX_LOG_RAW) {
+            return text;
+        }
+        return text.substring(0, MAX_LOG_RAW) + "...";
     }
 }

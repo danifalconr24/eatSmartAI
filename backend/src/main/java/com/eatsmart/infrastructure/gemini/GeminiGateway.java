@@ -30,6 +30,7 @@ public class GeminiGateway
 
     private static final Logger LOG = Logger.getLogger(GeminiGateway.class);
     private static final double TEMPERATURE = 0.3;
+    private static final int MAX_LOG_BODY = 500;
 
     @ConfigProperty(name = "gemini.api.key")
     String apiKey;
@@ -91,22 +92,28 @@ public class GeminiGateway
 
     private String call(GeminiGenerateRequest request) throws AnalysisException {
         GeminiGenerateResponse response;
+        long start = System.nanoTime();
         try {
             response = client.generate(model, request);
         } catch (WebApplicationException e) {
-            LOG.warnf("Gemini respondió %d: %s",
-                    e.getResponse() != null ? e.getResponse().getStatus() : -1, responseBody(e));
+            int status = e.getResponse() != null ? e.getResponse().getStatus() : -1;
+            LOG.warnf("Gemini returned HTTP %d: %s", status, truncate(responseBody(e)));
             throw new AnalysisException("Gemini rechazó la petición de análisis.", e);
         } catch (Exception e) {
-            // Cualquier fallo técnico (timeout, transporte, serialización) dispara el fallback.
-            LOG.warn("Error de comunicación con Gemini", e);
+            // Any technical failure (timeout, transport, serialization) triggers fallback.
+            LOG.warn("Communication error with Gemini", e);
             throw new AnalysisException("No se pudo conectar con Gemini.", e);
+        } finally {
+            long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+            LOG.debugf("Gemini request completed in %d ms", elapsedMs);
         }
 
         String text = response != null ? response.firstText() : null;
         if (text == null || text.isBlank()) {
+            LOG.warn("Gemini returned an empty response");
             throw new AnalysisException("Gemini devolvió una respuesta vacía.", null);
         }
+        LOG.infof("Gemini answered via model '%s'", model);
         return text;
     }
 
@@ -116,5 +123,12 @@ public class GeminiGateway
         } catch (RuntimeException ignored) {
             return "";
         }
+    }
+
+    private static String truncate(String text) {
+        if (text == null || text.length() <= MAX_LOG_BODY) {
+            return text;
+        }
+        return text.substring(0, MAX_LOG_BODY) + "...";
     }
 }
