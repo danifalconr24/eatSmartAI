@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 
-/// URL base del backend. Por defecto apunta al emulador de Android.
+/// URL base del backend. Por defecto apunta a producción.
 /// Sobreescribible con: flutter run --dart-define=BACKEND_URL=http://192.168.1.X:8080
 const String kBackendBaseUrl = String.fromEnvironment(
   'BACKEND_URL',
-  defaultValue: 'http://10.0.2.2:8080',
+  defaultValue: 'https://eatsmart.76-13-56-38.nip.io',
 );
 
 class AnalysisResult {

@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -51,6 +53,10 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>eatSmartAI necesita la cámara para fotografiar tus tickets de compra.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>eatSmartAI necesita acceso al micrófono para la cámara, aunque no graba audio.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>eatSmartAI usa tu identificador de dispositivo para mostrar anuncios personalizados de forma segura.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>eatSmartAI necesita acceso a tu galería para elegir una foto del ticket.</string>
 	<key>NSAppTransportSecurity</key>

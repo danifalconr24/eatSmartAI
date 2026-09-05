@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'ads/ad_service.dart';
+import 'ads/consent_service.dart';
 import 'ads/credit_service.dart';
 import 'screens/home_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // App solo en vertical (diseño pensado para móvil en portrait).
-  SystemChrome.setPreferredOrientations([
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-  AdService.instance.initialize();
+  await ConsentService.initialize();
   CreditService.instance.initialize();
   runApp(const EatSmartAiApp());
 }
