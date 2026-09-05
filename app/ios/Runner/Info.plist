@@ -59,11 +59,6 @@
 	<string>eatSmartAI usa tu identificador de dispositivo para mostrar anuncios personalizados de forma segura.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>eatSmartAI necesita acceso a tu galería para elegir una foto del ticket.</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-9121163197250140~8933727369</string>
 	<key>SKAdNetworkItems</key>
