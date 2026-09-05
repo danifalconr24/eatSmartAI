@@ -114,12 +114,7 @@ class _ChatOverlayState extends State<ChatOverlay> {
             ),
             const Divider(height: 1),
             Padding(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                8,
-                16,
-                8 + MediaQuery.viewInsetsOf(context).bottom,
-              ),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
