@@ -1,0 +1,7 @@
+# AdMob app-ads.txt for eatSmartAI
+# This file is served directly by Caddy on the VPS at:
+# https://eatsmart.76-13-56-38.nip.io/app-ads.txt
+# Use that URL in AdMob (App settings > app-ads.txt), Google Play and
+# App Store Connect. This local copy is kept for reference only.
+
+google.com, pub-9121163197250140, DIRECT, f08c47fec0942fa0

@@ -1,0 +1,19 @@
+eatsmart.76-13-56-38.nip.io {
+    handle /app-ads.txt {
+        root * /srv
+        file_server
+    }
+
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+
+    handle /q/* {
+        reverse_proxy backend:8080
+    }
+
+    handle {
+        root * /srv/landing
+        file_server
+    }
+}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eatSmartAI — Compra saludable, sin complicaciones</title>
+  <meta name="description" content="Escanea tickets y productos del supermercado y recibe consejos de nutrición personalizados en español.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="logo.jpeg" type="image/jpeg">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <img src="logo.jpeg" alt="eatSmartAI" class="brand-logo">
+        <span class="brand-name">eatSmartAI</span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="index.html" class="nav-link active">Inicio</a>
+        <a href="support.html" class="nav-link">Soporte</a>
+        <a href="privacy.html" class="nav-link">Privacidad</a>
+      </nav>
+      <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false" onclick="document.querySelector('.main-nav').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <h1>Tu compra, más saludable</h1>
+          <p class="lead">Escanea tu ticket o cualquier producto del supermercado y recibe consejos de nutrición personalizados en segundos.</p>
+          <div class="cta-row">
+            <a href="#download" class="btn btn-primary">Descargar la app</a>
+            <a href="#features" class="btn btn-secondary">Descubrir funciones</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="phone-mockup">
+            <div class="phone-screen">
+              <div class="scan-preview"></div>
+              <div class="result-chip">Score: 8.5/10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="container">
+        <h2 class="section-title">Todo lo que necesitas para comer mejor</h2>
+        <div class="feature-grid">
+          <article class="feature-card card-green">
+            <div class="feature-icon">🧾</div>
+            <h3>Escaneo de tickets</h3>
+            <p>Fotografía tu ticket de compra y obtén un análisis completo: grupos de alimentos, mejoras y optimización de presupuesto.</p>
+          </article>
+          <article class="feature-card card-blue">
+            <div class="feature-icon">📦</div>
+            <h3>Escaneo de productos</h3>
+            <p>Saca una foto a cualquier producto y descubre su puntuación nutricional, alternativas más sanas y recomendaciones.</p>
+          </article>
+          <article class="feature-card card-coral">
+            <div class="feature-icon">🛒</div>
+            <h3>Listas de la compra</h3>
+            <p>Genera listas de compra inteligentes basadas en tu análisis para completar tu dieta semanal.</p>
+          </article>
+          <article class="feature-card card-purple">
+            <div class="feature-icon">💬</div>
+            <h3>Chat con nutricionista</h3>
+            <p>Pregunta a la IA sobre tu análisis y recibe respuestas claras en español, siempre dentro del contexto de tu compra.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-it-works">
+      <div class="container">
+        <h2 class="section-title">Cómo funciona</h2>
+        <ol class="steps">
+          <li>
+            <span class="step-number">1</span>
+            <h4>Escanea</h4>
+            <p>Elige ticket o producto y haz una foto o súbela desde la galería.</p>
+          </li>
+          <li>
+            <span class="step-number">2</span>
+            <h4>Completa tu perfil</h4>
+            <p>Indica tu objetivo, alergias, preferencias dietéticas y si te importa el presupuesto.</p>
+          </li>
+          <li>
+            <span class="step-number">3</span>
+            <h4>Recibe tu análisis</h4>
+            <p>Consulta productos detectados, puntuación y sugerencias personalizadas.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="download" class="download">
+      <div class="container download-inner">
+        <h2 class="section-title">Empieza hoy</h2>
+        <p class="download-lead">Disponible próximamente en iOS y Android. Mientras tanto, puedes contactarnos o leer más sobre cómo cuidamos tus datos.</p>
+        <div class="store-row">
+          <a class="store-badge disabled" aria-disabled="true" tabindex="-1">
+            <span class="store-name">App Store</span>
+            <span class="store-soon">Próximamente</span>
+          </a>
+          <a class="store-badge disabled" aria-disabled="true" tabindex="-1">
+            <span class="store-name">Google Play</span>
+            <span class="store-soon">Próximamente</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="logo.jpeg" alt="" class="footer-logo">
+        <span>eatSmartAI</span>
+      </div>
+      <nav class="footer-nav" aria-label="Navegación secundaria">
+        <a href="support.html">Soporte</a>
+        <a href="privacy.html">Política de privacidad</a>
+      </nav>
+      <p class="copyright">© 2026 eatSmartAI. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>

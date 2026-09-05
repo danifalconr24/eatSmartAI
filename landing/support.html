@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soporte — eatSmartAI</title>
+  <meta name="description" content="Centro de ayuda y soporte de eatSmartAI. Resuelve dudas sobre escaneos, créditos y privacidad.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="logo.jpeg" type="image/jpeg">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <img src="logo.jpeg" alt="eatSmartAI" class="brand-logo">
+        <span class="brand-name">eatSmartAI</span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="support.html" class="nav-link active">Soporte</a>
+        <a href="privacy.html" class="nav-link">Privacidad</a>
+      </nav>
+      <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false" onclick="document.querySelector('.main-nav').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <h1>Soporte</h1>
+        <p class="lead">Estamos aquí para ayudarte a sacar el máximo partido a eatSmartAI.</p>
+      </div>
+    </section>
+
+    <section class="support-content">
+      <div class="container support-grid">
+        <div class="support-card">
+          <h2>Contacto</h2>
+          <p>¿No encuentras respuesta? Escríbenos y te responderemos lo antes posible.</p>
+          <a href="mailto:danielfalconr24@gmail.com" class="btn btn-primary">Enviar correo</a>
+          <p class="support-note">Horario de respuesta: 24-48 horas laborables.</p>
+        </div>
+
+        <div class="faq">
+          <h2>Preguntas frecuentes</h2>
+          <details class="faq-item">
+            <summary>¿Cómo funciona el sistema de créditos?</summary>
+            <p>Cada análisis de ticket o producto, así como cada lista de la compra generada, consume 1 crédito. Los créditos se gastan solo cuando recibes una respuesta válida; si hay un fallo técnico, no se descuentan. Puedes conseguir más créditos viendo anuncios de video recompensa.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Mis datos están seguros?</summary>
+            <p>No guardamos tu historial ni creamos cuentas de usuario. Las imágenes se envían a nuestros proveedores de IA únicamente para generar el análisis. Puedes leer todos los detalles en nuestra <a href="privacy.html">política de privacidad</a>.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Por qué me dice que el ticket no se lee?</summary>
+            <p>Asegúrate de que la foto tenga buena luz, esté enfocada y se vean claramente los productos y precios. Evita reflejos y bordes cortados.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Puedo usar la app sin conexión?</summary>
+            <p>No. La app necesita conexión a internet para enviar las imágenes al backend y recibir el análisis de la IA.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Qué hago si la app se cierra inesperadamente?</summary>
+            <p>Intenta cerrar la app por completo y volver a abrirla. Si el problema persiste, envíanos un correo indicando tu modelo de móvil y versión del sistema operativo.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="logo.jpeg" alt="" class="footer-logo">
+        <span>eatSmartAI</span>
+      </div>
+      <nav class="footer-nav" aria-label="Navegación secundaria">
+        <a href="support.html">Soporte</a>
+        <a href="privacy.html">Política de privacidad</a>
+      </nav>
+      <p class="copyright">© 2026 eatSmartAI. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>

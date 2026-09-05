@@ -1,0 +1,40 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eatsmart-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - QUARKUS_HTTP_HOST=0.0.0.0
+    expose:
+      - "8080"
+    networks:
+      - eatsmart
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: eatsmart-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./app-ads.txt:/srv/app-ads.txt:ro
+      - ./landing:/srv/landing:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - eatsmart
+    depends_on:
+      - backend
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  eatsmart:
+    driver: bridge
