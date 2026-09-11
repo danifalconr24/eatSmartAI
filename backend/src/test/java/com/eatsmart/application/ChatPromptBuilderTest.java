@@ -75,4 +75,13 @@ class ChatPromptBuilderTest {
         assertThat(prompt).contains("NUNCA recomiendes algo que contenga un alérgeno");
         assertThat(prompt).contains("siempre en español");
     }
+
+    @Test
+    void build_requiresSourcesSection() {
+        String prompt = builder.build(receiptContext());
+
+        assertThat(prompt).contains("## Fuentes");
+        assertThat(prompt).contains("OMS");
+        assertThat(prompt).contains("AESAN");
+    }
 }

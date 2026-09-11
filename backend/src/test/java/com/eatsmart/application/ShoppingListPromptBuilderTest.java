@@ -48,6 +48,8 @@ class ShoppingListPromptBuilderTest {
         assertThat(prompt).contains("Ninguna");
         assertThat(prompt).contains("Mantenerme");
         assertThat(prompt).contains("Sin preferencia");
+        assertThat(prompt).contains("\"sources\"");
+        assertThat(prompt).contains("https://");
     }
 
     @Test

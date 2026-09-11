@@ -9,11 +9,37 @@ const String kBackendBaseUrl = String.fromEnvironment(
   defaultValue: 'https://eatsmart.76-13-56-38.nip.io',
 );
 
+/// Cita a una fuente fiable (título + enlace HTTPS).
+class Source {
+  const Source({required this.title, required this.url});
+
+  final String title;
+  final String url;
+
+  factory Source.fromJson(dynamic json) {
+    final map = json as Map<String, dynamic>? ?? {};
+    return Source(
+      title: map['title']?.toString() ?? '',
+      url: map['url']?.toString() ?? '',
+    );
+  }
+}
+
+List<Source> _parseSources(dynamic value) {
+  final list = value as List<dynamic>? ?? [];
+  return list
+      .whereType<Map<String, dynamic>>()
+      .map(Source.fromJson)
+      .where((s) => s.title.isNotEmpty && s.url.startsWith('https://'))
+      .toList();
+}
+
 class AnalysisResult {
   AnalysisResult({
     required this.products,
     required this.suggestions,
     required this.score,
+    this.sources = const [],
   });
 
   final List<String> products;
@@ -21,6 +47,9 @@ class AnalysisResult {
 
   /// Puntuación de saludabilidad de la compra, de 0 a 10.
   final int score;
+
+  /// Fuentes que respaldan las recomendaciones.
+  final List<Source> sources;
 }
 
 class ProductAnalysisResult {
@@ -29,19 +58,30 @@ class ProductAnalysisResult {
     required this.score,
     required this.nutrition,
     this.alternative,
+    this.sources = const [],
   });
 
   final String product;
   final int score;
   final String nutrition;
   final ProductAlternative? alternative;
+
+  /// Fuentes que respaldan la valoración nutricional.
+  final List<Source> sources;
 }
 
 class ProductAlternative {
-  ProductAlternative({required this.name, required this.reason});
+  ProductAlternative({
+    required this.name,
+    required this.reason,
+    this.sources = const [],
+  });
 
   final String name;
   final String reason;
+
+  /// Fuentes que respaldan la alternativa sugerida.
+  final List<Source> sources;
 }
 
 class ApiException implements Exception {
@@ -68,6 +108,7 @@ class ShoppingListItemResult {
     required this.type,
     this.replaces,
     this.reason,
+    this.sources = const [],
   });
 
   final String name;
@@ -77,6 +118,9 @@ class ShoppingListItemResult {
   final String type;
   final String? replaces;
   final String? reason;
+
+  /// Fuentes que respaldan el motivo de sustitución/adición.
+  final List<Source> sources;
 }
 
 class ShoppingListResult {
@@ -212,6 +256,7 @@ class ApiClient {
             .toList(),
         suggestions: data['suggestions']?.toString() ?? '',
         score: (data['score'] as num?)?.round().clamp(0, 10) ?? 0,
+        sources: _parseSources(data['sources']),
       );
     } on DioException catch (e) {
       throw _mapError(e);
@@ -244,10 +289,12 @@ class ApiClient {
         product: data['product']?.toString() ?? '',
         score: (data['score'] as num?)?.round().clamp(0, 10) ?? 0,
         nutrition: data['nutrition']?.toString() ?? '',
+        sources: _parseSources(data['sources']),
         alternative: altData != null
             ? ProductAlternative(
                 name: altData['name']?.toString() ?? '',
                 reason: altData['reason']?.toString() ?? '',
+                sources: _parseSources(altData['sources']),
               )
             : null,
       );
@@ -289,6 +336,7 @@ class ApiClient {
             type: item['type']?.toString() ?? 'KEEP',
             replaces: item['replaces']?.toString(),
             reason: item['reason']?.toString(),
+            sources: _parseSources(item['sources']),
           ));
         }
       }

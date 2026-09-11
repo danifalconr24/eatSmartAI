@@ -1,6 +1,7 @@
 package com.eatsmart.application;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.logging.Logger;
@@ -8,6 +9,7 @@ import org.jboss.logging.Logger;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.AnalyzeResponse;
+import com.eatsmart.domain.model.Source;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -64,7 +66,29 @@ public class AnalysisResultParser {
             throw new AnalysisException("El proveedor devolvió una respuesta incompleta.", null);
         }
         int score = Math.clamp(scoreNode.intValue(), 0, 10);
-        return new AnalyzeResponse(products, suggestions, score);
+        List<Source> sources = parseSources(result.path("sources"));
+        return new AnalyzeResponse(products, suggestions, score, sources);
+    }
+
+    private List<Source> parseSources(JsonNode sourcesNode) {
+        if (!sourcesNode.isArray()) {
+            return List.of();
+        }
+        List<Source> sources = new ArrayList<>();
+        for (JsonNode node : sourcesNode) {
+            String title = node.path("title").asText("").trim();
+            String url = node.path("url").asText("").trim();
+            if (title.isEmpty() || !isValidSourceUrl(url)) {
+                LOG.warnf("Skipping invalid source: title='%s' url='%s'", title, url);
+                continue;
+            }
+            sources.add(new Source(title, url));
+        }
+        return sources;
+    }
+
+    private static boolean isValidSourceUrl(String url) {
+        return url.startsWith("https://") && url.length() > "https://".length();
     }
 
     private JsonNode parseJsonObject(String text) {

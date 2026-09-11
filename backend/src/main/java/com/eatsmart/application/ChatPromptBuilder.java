@@ -66,6 +66,9 @@ public class ChatPromptBuilder {
         prompt.append("- Basa tus respuestas en el análisis anterior y el perfil del usuario.\n");
         prompt.append("- NUNCA recomiendes algo que contenga un alérgeno o intolerancia indicada.\n");
         prompt.append("- Respeta siempre la preferencia dietética del usuario.\n");
+        prompt.append("- Cita siempre las fuentes de tus afirmaciones nutricionales o de salud usando enlaces markdown ");
+        prompt.append("a instituciones reconocidas (OMS, AESAN, NIH, Harvard T.H. Chan School of Public Health, EFSA, FAO).\n");
+        prompt.append("- Al final de cada respuesta, añade una sección \"## Fuentes\" con los enlaces citados.\n");
         prompt.append("- Si te preguntan algo ajeno a nutrición o al análisis, rechaza amablemente ")
                 .append("y redirige la conversación al análisis.\n");
         prompt.append("- No inventes datos del análisis: si algo no está en el contexto, dilo.\n");

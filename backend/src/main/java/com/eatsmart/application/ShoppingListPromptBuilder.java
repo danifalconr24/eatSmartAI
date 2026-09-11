@@ -75,13 +75,16 @@ public class ShoppingListPromptBuilder {
         prompt.append("      \"items\": [\n");
         prompt.append("        {\"name\": \"Manzanas\", \"type\": \"KEEP\", \"replaces\": null, \"reason\": null},\n");
         prompt.append("        {\"name\": \"Yogur natural sin azúcar\", \"type\": \"REPLACE\", ")
-                .append("\"replaces\": \"Yogur azucarado\", \"reason\": \"Menos azúcar añadido\"}\n");
+                .append("\"replaces\": \"Yogur azucarado\", \"reason\": \"Menos azúcar añadido\", ")
+                .append("\"sources\": [{\"title\": \"OMS\", \"url\": \"https://www.who.int/es/health-topics/nutrition\"}]}\n");
         prompt.append("      ]\n");
         prompt.append("    }\n");
         prompt.append("  ]\n");
         prompt.append("}\n\n");
         prompt.append("- \"type\" solo puede ser KEEP, REPLACE o ADD.\n");
         prompt.append("- Para REPLACE, \"replaces\" y \"reason\" son obligatorios; para KEEP y ADD deben ser null.\n");
+        prompt.append("- Para REPLACE y ADD, incluye opcionalmente \"sources\": array de 1 a 2 fuentes fiables con \"title\" y \"url\" HTTPS ")
+                .append("que respalden el motivo (OMS, AESAN, NIH, Harvard, EFSA, FAO).\n");
         prompt.append("- La lista debe contener al menos un artículo en total.\n");
         return prompt.toString();
     }

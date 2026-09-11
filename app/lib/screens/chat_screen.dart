@@ -3,6 +3,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../api_client.dart';
 import '../data/chat_session.dart';
+import '../widgets/sources_footer.dart';
 
 /// Abre el chat con el nutricionista como ventana flotante sobre la
 /// pantalla de resultados. La [session] vive en la pantalla anfitriona, así
@@ -101,8 +102,14 @@ class _ChatOverlayState extends State<ChatOverlay> {
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16),
                       itemCount:
-                          _session.messages.length + (_session.sending ? 1 : 0),
+                          _session.messages.length + (_session.sending ? 1 : 0) + 1,
                       itemBuilder: (context, index) {
+                        if (index == _session.messages.length + 1) {
+                          return SourcesFooter(
+                            sources: const [],
+                            fallbackLabel: 'Fuentes del nutricionista',
+                          );
+                        }
                         if (index == _session.messages.length) {
                           return _buildTypingIndicator(theme);
                         }
@@ -304,6 +311,9 @@ class _MessageBubble extends StatelessWidget {
                     color: theme.colorScheme.onSecondaryContainer,
                   ),
                 ),
+                onTapLink: (text, href, title) {
+                  if (href != null) openSourceUrl(href);
+                },
               ),
       ),
     );

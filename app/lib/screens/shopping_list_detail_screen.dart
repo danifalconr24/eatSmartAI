@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/shopping_list_repository.dart';
 import '../models/shopping_list.dart';
+import '../widgets/sources_footer.dart';
 
 /// Detalle de una lista de la compra: artículos por categoría, checkbox de
 /// compra, edición y eliminación.
@@ -136,6 +137,10 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
               : ListView(
                   padding: const EdgeInsets.only(bottom: 24),
                   children: [
+                    SourcesFooter(
+                      sources: const [],
+                      fallbackLabel: 'Fuentes de las recomendaciones',
+                    ),
                     for (final entry in list.itemsByCategory.entries) ...[
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -175,9 +180,15 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
                             subtitle: item.type ==
                                         ShoppingListItemType.replace &&
                                     item.replaces != null
-                                ? Text(
-                                    'Sustituye a ${item.replaces}'
-                                    '${item.reason != null ? ' · ${item.reason}' : ''}',
+                                ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Sustituye a ${item.replaces}'
+                                        '${item.reason != null ? ' · ${item.reason}' : ''}',
+                                      ),
+                                      SourceChipList(sources: item.sources),
+                                    ],
                                   )
                                 : null,
                             secondary: IconButton(

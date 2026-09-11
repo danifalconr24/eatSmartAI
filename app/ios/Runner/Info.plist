@@ -61,6 +61,11 @@
 	<string>eatSmartAI necesita acceso a tu galería para elegir una foto del ticket.</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-9121163197250140~8933727369</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+	</array>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

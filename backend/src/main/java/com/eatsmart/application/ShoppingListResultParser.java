@@ -14,6 +14,7 @@ import com.eatsmart.domain.model.ShoppingList;
 import com.eatsmart.domain.model.ShoppingListCategory;
 import com.eatsmart.domain.model.ShoppingListItem;
 import com.eatsmart.domain.model.ShoppingListItemType;
+import com.eatsmart.domain.model.Source;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -106,7 +107,29 @@ public class ShoppingListResultParser {
             LOG.warnf("%s item must not have 'replaces'/'reason': %s", type, node);
             throw incomplete(raw);
         }
-        return new ShoppingListItem(name, type, replaces, reason);
+        List<Source> sources = parseSources(node.path("sources"));
+        return new ShoppingListItem(name, type, replaces, reason, sources);
+    }
+
+    private List<Source> parseSources(JsonNode sourcesNode) {
+        if (!sourcesNode.isArray()) {
+            return List.of();
+        }
+        List<Source> sources = new ArrayList<>();
+        for (JsonNode node : sourcesNode) {
+            String title = node.path("title").asText("").trim();
+            String url = node.path("url").asText("").trim();
+            if (title.isEmpty() || !isValidSourceUrl(url)) {
+                LOG.warnf("Skipping invalid source: title='%s' url='%s'", title, url);
+                continue;
+            }
+            sources.add(new Source(title, url));
+        }
+        return sources;
+    }
+
+    private static boolean isValidSourceUrl(String url) {
+        return url.startsWith("https://") && url.length() > "https://".length();
     }
 
     private AnalysisException incomplete(String raw) {

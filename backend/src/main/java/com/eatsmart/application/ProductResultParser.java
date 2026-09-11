@@ -1,12 +1,15 @@
 package com.eatsmart.application;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.logging.Logger;
 
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.ProductAnalyzeResponse;
+import com.eatsmart.domain.model.Source;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,16 +58,40 @@ public class ProductResultParser {
         }
         int score = Math.clamp(scoreNode.intValue(), 0, 10);
 
+        List<Source> sources = parseSources(result.path("sources"));
+
         ProductAnalyzeResponse.Alternative alternative = null;
         JsonNode altNode = result.path("alternative");
         if (altNode.isObject()) {
             String altName = altNode.path("name").asText("");
             String altReason = altNode.path("reason").asText("");
+            List<Source> altSources = parseSources(altNode.path("sources"));
             if (!altName.isBlank()) {
-                alternative = new ProductAnalyzeResponse.Alternative(altName, altReason);
+                alternative = new ProductAnalyzeResponse.Alternative(altName, altReason, altSources);
             }
         }
-        return new ProductAnalyzeResponse(product, score, nutrition, alternative);
+        return new ProductAnalyzeResponse(product, score, nutrition, alternative, sources);
+    }
+
+    private List<Source> parseSources(JsonNode sourcesNode) {
+        if (!sourcesNode.isArray()) {
+            return List.of();
+        }
+        List<Source> sources = new ArrayList<>();
+        for (JsonNode node : sourcesNode) {
+            String title = node.path("title").asText("").trim();
+            String url = node.path("url").asText("").trim();
+            if (title.isEmpty() || !isValidSourceUrl(url)) {
+                LOG.warnf("Skipping invalid source: title='%s' url='%s'", title, url);
+                continue;
+            }
+            sources.add(new Source(title, url));
+        }
+        return sources;
+    }
+
+    private static boolean isValidSourceUrl(String url) {
+        return url.startsWith("https://") && url.length() > "https://".length();
     }
 
     private JsonNode parseJsonObject(String text) {

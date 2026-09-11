@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.model.ShoppingList;
 import com.eatsmart.domain.model.ShoppingListItemType;
+import com.eatsmart.domain.model.Source;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 class ShoppingListResultParserTest {
@@ -50,6 +51,31 @@ class ShoppingListResultParserTest {
         assertThat(list.categories().get(0).items().get(0).type()).isEqualTo(ShoppingListItemType.KEEP);
         assertThat(list.categories().get(1).items().get(0).replaces()).isEqualTo("Yogur azucarado");
         assertThat(list.categories().get(1).items().get(1).type()).isEqualTo(ShoppingListItemType.ADD);
+        assertThat(list.categories().get(0).items().get(0).sources()).isEmpty();
+    }
+
+    @Test
+    void parse_withItemSources_returnsSources() throws Exception {
+        String json = """
+                {"categories": [{"name": "Despensa", "items": [
+                    {"name": "Pan integral", "type": "REPLACE", "replaces": "Pan blanco", "reason": "Más fibra", \
+                    "sources": [{"title": "OMS", "url": "https://www.who.int/es/nutrition"}]}]}]}
+                """;
+        ShoppingList list = parser.parse(json);
+        assertThat(list.categories().get(0).items().get(0).sources())
+                .containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
+    }
+
+    @Test
+    void parse_invalidSourceUrl_skipsSource() throws Exception {
+        String json = """
+                {"categories": [{"name": "Despensa", "items": [
+                    {"name": "Pan integral", "type": "REPLACE", "replaces": "Pan blanco", "reason": "Más fibra", \
+                    "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/nutrition"}]}]}]}
+                """;
+        ShoppingList list = parser.parse(json);
+        assertThat(list.categories().get(0).items().get(0).sources())
+                .containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
     }
 
     @Test

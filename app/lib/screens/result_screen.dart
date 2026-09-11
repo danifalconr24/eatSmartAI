@@ -8,6 +8,7 @@ import '../models/shopping_list.dart';
 import '../widgets/credits_dialog.dart';
 import '../widgets/markdown_sections.dart';
 import '../widgets/score_header.dart';
+import '../widgets/sources_footer.dart';
 import 'chat_screen.dart';
 import 'shopping_list_detail_screen.dart';
 
@@ -84,6 +85,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   ShoppingListItemType.keep,
               replaces: item.replaces,
               reason: item.reason,
+              sources: item.sources,
             ),
         ],
       );
@@ -169,7 +171,16 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           Expanded(
             child: sections.isEmpty
-                ? _FallbackSuggestions(suggestions: result.suggestions)
+                ? SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(result.suggestions, style: theme.textTheme.bodyMedium),
+                        SourcesFooter(sources: result.sources),
+                      ],
+                    ),
+                  )
                 : ListView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     children: [
@@ -178,6 +189,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           section: sections[i],
                           initiallyExpanded: i == 0,
                         ),
+                      SourcesFooter(sources: result.sources),
                     ],
                   ),
           ),
@@ -225,17 +237,4 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 }
 
-class _FallbackSuggestions extends StatelessWidget {
-  const _FallbackSuggestions({required this.suggestions});
 
-  final String suggestions;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Text(suggestions, style: theme.textTheme.bodyMedium),
-    );
-  }
-}
