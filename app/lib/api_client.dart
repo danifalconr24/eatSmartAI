@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 /// Sobreescribible con: flutter run --dart-define=BACKEND_URL=http://192.168.1.X:8080
 const String kBackendBaseUrl = String.fromEnvironment(
   'BACKEND_URL',
-  defaultValue: 'https://eatsmart.76-13-56-38.nip.io',
+  defaultValue: 'https://eatsmartai.online',
 );
 
 /// Cita a una fuente fiable (título + enlace HTTPS).
