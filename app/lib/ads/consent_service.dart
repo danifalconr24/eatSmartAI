@@ -17,12 +17,17 @@ class ConsentService {
   /// Requests consent and ATT, then initializes the ad SDK.
   ///
   /// Call once before [runApp]. Safe to call again; subsequent calls no-op.
+  ///
+  /// On iOS the native App Tracking Transparency prompt is requested first so
+  /// no consent message (which may carry a "Consent"-style button) precedes it.
+  /// UMP (GDPR/EEA) consent is requested afterwards. On Android the ATT call
+  /// is a no-op, so the flow stays UMP-only.
   static Future<void> initialize() async {
     if (_completed) return;
 
+    await _requestTrackingTransparency();
     await _updateConsentInfo();
     await _showFormIfRequired();
-    await _requestTrackingTransparency();
 
     AdService.instance.initialize();
     _completed = true;
