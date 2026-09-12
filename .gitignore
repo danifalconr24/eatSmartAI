@@ -24,3 +24,4 @@ opencode.json
 # Secretos
 .env
 Caddyfile
+PROD_BACK_API_LOGS_CHECK.md
