@@ -85,7 +85,8 @@ public class ShoppingListPromptBuilder {
         prompt.append("- Para REPLACE, \"replaces\" y \"reason\" son obligatorios; para KEEP y ADD deben ser null.\n");
         prompt.append("- Para REPLACE y ADD, incluye opcionalmente \"sources\": array de 1 a 2 fuentes fiables con \"title\" y \"url\" HTTPS ")
                 .append("que respalden el motivo (OMS, AESAN, NIH, Harvard, EFSA, FAO).\n");
-        prompt.append("- La lista debe contener al menos un artículo en total.\n");
+         prompt.append("- La lista debe contener al menos un artículo en total.\n");
+         prompt.append("REGLAS DE CITACIÓN: cada URL debe ser una página real y específica que hayas usado para justificar el artículo; no inventes URLs, no uses páginas de inicio genéricas y no cites una fuente que no hayas consultado. Si no puedes proporcionar una URL exacta y verificable, omite \"sources\".\n");
         return prompt.toString();
     }
 }

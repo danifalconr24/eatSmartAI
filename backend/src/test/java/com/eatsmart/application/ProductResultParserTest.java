@@ -40,24 +40,24 @@ class ProductResultParserTest {
     void parse_withSources_returnsSources() throws Exception {
         String json = """
                 {"product": "leche", "score": 5, "nutrition": "## Info", \
-                "sources": [{"title": "OMS", "url": "https://www.who.int/es/nutrition"}], \
+                "sources": [{"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}], \
                 "alternative": {"name": "soja", "reason": "x", \
-                "sources": [{"title": "AESAN", "url": "https://www.aesan.gob.es/AECOSAN/web/home/home.htm"}]}}
+                "sources": [{"title": "AESAN", "url": "https://www.aesan.gob.es/"}]}}
                 """;
         ProductAnalyzeResponse result = parser.parse(json);
-        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
+        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
         assertThat(result.alternative().sources()).containsExactly(
-                new Source("AESAN", "https://www.aesan.gob.es/AECOSAN/web/home/home.htm"));
+                new Source("AESAN", "https://www.aesan.gob.es/"));
     }
 
     @Test
     void parse_invalidSourceUrl_skipsSource() throws Exception {
         String json = """
                 {"product": "leche", "score": 5, "nutrition": "## Info", \
-                "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/nutrition"}]}
+                "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}]}
                 """;
         ProductAnalyzeResponse result = parser.parse(json);
-        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
+        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
     }
 
     @Test

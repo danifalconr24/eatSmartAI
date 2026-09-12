@@ -102,15 +102,10 @@ class _ChatOverlayState extends State<ChatOverlay> {
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16),
                       itemCount:
-                          _session.messages.length + (_session.sending ? 1 : 0) + 1,
+                          _session.messages.length + (_session.sending ? 1 : 0),
                       itemBuilder: (context, index) {
-                        if (index == _session.messages.length + 1) {
-                          return SourcesFooter(
-                            sources: const [],
-                            fallbackLabel: 'Fuentes del nutricionista',
-                          );
-                        }
-                        if (index == _session.messages.length) {
+                        final typingIndex = _session.messages.length;
+                        if (_session.sending && index == typingIndex) {
                           return _buildTypingIndicator(theme);
                         }
                         return _MessageBubble(

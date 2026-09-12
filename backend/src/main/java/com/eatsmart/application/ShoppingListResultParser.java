@@ -129,7 +129,7 @@ public class ShoppingListResultParser {
     }
 
     private static boolean isValidSourceUrl(String url) {
-        return url.startsWith("https://") && url.length() > "https://".length();
+        return url.startsWith("https://") && SourceUrlPolicy.isAllowed(url);
     }
 
     private AnalysisException incomplete(String raw) {

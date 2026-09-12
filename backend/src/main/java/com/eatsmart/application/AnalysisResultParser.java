@@ -88,7 +88,7 @@ public class AnalysisResultParser {
     }
 
     private static boolean isValidSourceUrl(String url) {
-        return url.startsWith("https://") && url.length() > "https://".length();
+        return url.startsWith("https://") && SourceUrlPolicy.isAllowed(url);
     }
 
     private JsonNode parseJsonObject(String text) {

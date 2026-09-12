@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../api_client.dart';
 import '../data/shopping_list_repository.dart';
 import '../models/shopping_list.dart';
 import '../widgets/sources_footer.dart';
@@ -44,19 +45,23 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
   Future<void> _toggleChecked(ShoppingListItem item) async {
     final list = _list;
     if (list == null) return;
-    await _persist(list.copyWithItems([
-      for (final i in list.items)
-        i.id == item.id ? i.copyWith(checked: !i.checked) : i,
-    ]));
+    await _persist(
+      list.copyWithItems([
+        for (final i in list.items)
+          i.id == item.id ? i.copyWith(checked: !i.checked) : i,
+      ]),
+    );
   }
 
   Future<void> _deleteItem(ShoppingListItem item) async {
     final list = _list;
     if (list == null) return;
-    await _persist(list.copyWithItems([
-      for (final i in list.items)
-        if (i.id != item.id) i,
-    ]));
+    await _persist(
+      list.copyWithItems([
+        for (final i in list.items)
+          if (i.id != item.id) i,
+      ]),
+    );
   }
 
   Future<void> _editItem(ShoppingListItem item) async {
@@ -114,10 +119,12 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
     );
     final newName = nameController.text.trim();
     if (saved == true && newName.isNotEmpty) {
-      await _persist(list.copyWithItems([
-        for (final i in list.items)
-          i.id == item.id ? i.copyWith(name: newName, category: category) : i,
-      ]));
+      await _persist(
+        list.copyWithItems([
+          for (final i in list.items)
+            i.id == item.id ? i.copyWith(name: newName, category: category) : i,
+        ]),
+      );
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       nameController.dispose();
@@ -128,79 +135,87 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final list = _list;
+    final sources = <Source>[];
+    if (list != null) {
+      for (final item in list.items) {
+        for (final source in item.sources) {
+          if (!sources.any((s) => s.url == source.url)) sources.add(source);
+        }
+      }
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Lista de la compra')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : list == null
-              ? const Center(child: Text('La lista ya no existe.'))
-              : ListView(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  children: [
-                    SourcesFooter(
-                      sources: const [],
-                      fallbackLabel: 'Fuentes de las recomendaciones',
+          ? const Center(child: Text('La lista ya no existe.'))
+          : ListView(
+              padding: const EdgeInsets.only(bottom: 24),
+              children: [
+                for (final entry in list.itemsByCategory.entries) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                    child: Text(
+                      entry.key,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    for (final entry in list.itemsByCategory.entries) ...[
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                        child: Text(
-                          entry.key,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  ),
+                  for (final item in entry.value)
+                    Dismissible(
+                      key: ValueKey(item.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 16),
+                        color: theme.colorScheme.errorContainer,
+                        child: Icon(
+                          Icons.delete_outline,
+                          color: theme.colorScheme.onErrorContainer,
                         ),
                       ),
-                      for (final item in entry.value)
-                        Dismissible(
-                          key: ValueKey(item.id),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 16),
-                            color: theme.colorScheme.errorContainer,
-                            child: Icon(
-                              Icons.delete_outline,
-                              color: theme.colorScheme.onErrorContainer,
-                            ),
-                          ),
-                          onDismissed: (_) => _deleteItem(item),
-                          child: CheckboxListTile(
-                            value: item.checked,
-                            onChanged: (_) => _toggleChecked(item),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            title: Text(
-                              item.name,
-                              style: item.checked
-                                  ? const TextStyle(
-                                      decoration: TextDecoration.lineThrough)
-                                  : null,
-                            ),
-                            subtitle: item.type ==
-                                        ShoppingListItemType.replace &&
-                                    item.replaces != null
-                                ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Sustituye a ${item.replaces}'
-                                        '${item.reason != null ? ' · ${item.reason}' : ''}',
-                                      ),
-                                      SourceChipList(sources: item.sources),
-                                    ],
-                                  )
-                                : null,
-                            secondary: IconButton(
-                              icon: const Icon(Icons.edit_outlined),
-                              tooltip: 'Editar artículo',
-                              onPressed: () => _editItem(item),
-                            ),
-                          ),
+                      onDismissed: (_) => _deleteItem(item),
+                      child: CheckboxListTile(
+                        value: item.checked,
+                        onChanged: (_) => _toggleChecked(item),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: Text(
+                          item.name,
+                          style: item.checked
+                              ? const TextStyle(
+                                  decoration: TextDecoration.lineThrough,
+                                )
+                              : null,
                         ),
-                    ],
-                  ],
+                        subtitle:
+                            item.type == ShoppingListItemType.replace &&
+                                item.replaces != null
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Sustituye a ${item.replaces}'
+                                    '${item.reason != null ? ' · ${item.reason}' : ''}',
+                                  ),
+                                ],
+                              )
+                            : null,
+                        secondary: IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          tooltip: 'Editar artículo',
+                          onPressed: () => _editItem(item),
+                        ),
+                      ),
+                    ),
+                ],
+                SourcesFooter(
+                  sources: sources,
+                  fallbackLabel: 'Fuentes de las recomendaciones',
                 ),
+              ],
+            ),
     );
   }
 }

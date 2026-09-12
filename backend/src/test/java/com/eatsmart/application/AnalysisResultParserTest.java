@@ -38,20 +38,20 @@ class AnalysisResultParserTest {
     void parse_validJsonWithSources_returnsSources() throws Exception {
         String json = """
                 {"products": ["leche"], "score": 7, "suggestions": "Bien", \
-                "sources": [{"title": "OMS", "url": "https://www.who.int/es/nutrition"}]}
+                "sources": [{"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}]}
                 """;
         AnalyzeResponse result = parser.parse(json);
-        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
+        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
     }
 
     @Test
     void parse_invalidSourceUrl_skipsSource() throws Exception {
         String json = """
                 {"products": ["leche"], "score": 7, "suggestions": "Bien", \
-                "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/nutrition"}]}
+                "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}]}
                 """;
         AnalyzeResponse result = parser.parse(json);
-        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
+        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
     }
 
     @Test

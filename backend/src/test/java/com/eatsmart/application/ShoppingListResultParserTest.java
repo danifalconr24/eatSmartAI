@@ -59,11 +59,11 @@ class ShoppingListResultParserTest {
         String json = """
                 {"categories": [{"name": "Despensa", "items": [
                     {"name": "Pan integral", "type": "REPLACE", "replaces": "Pan blanco", "reason": "Más fibra", \
-                    "sources": [{"title": "OMS", "url": "https://www.who.int/es/nutrition"}]}]}]}
+                    "sources": [{"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}]}]}]}
                 """;
         ShoppingList list = parser.parse(json);
         assertThat(list.categories().get(0).items().get(0).sources())
-                .containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
+                .containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
     }
 
     @Test
@@ -71,11 +71,11 @@ class ShoppingListResultParserTest {
         String json = """
                 {"categories": [{"name": "Despensa", "items": [
                     {"name": "Pan integral", "type": "REPLACE", "replaces": "Pan blanco", "reason": "Más fibra", \
-                    "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/nutrition"}]}]}]}
+                    "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}]}]}]}
                 """;
         ShoppingList list = parser.parse(json);
         assertThat(list.categories().get(0).items().get(0).sources())
-                .containsExactly(new Source("OMS", "https://www.who.int/es/nutrition"));
+                .containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
     }
 
     @Test

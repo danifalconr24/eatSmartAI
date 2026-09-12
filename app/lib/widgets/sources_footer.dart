@@ -11,10 +11,6 @@ const List<Source> kDefaultSources = [
     url: 'https://www.who.int/es/health-topics/nutrition',
   ),
   Source(
-    title: 'AESAN',
-    url: 'https://www.aesan.gob.es/AECOSAN/web/home/home.htm',
-  ),
-  Source(
     title: 'NIH - Información de salud',
     url: 'https://www.niddk.nih.gov/health-information/informacion-de-la-salud',
   ),
@@ -27,11 +23,9 @@ const List<Source> kDefaultSources = [
 /// Abre [url] en el navegador del sistema. Silencia errores.
 Future<void> openSourceUrl(String url) async {
   final uri = Uri.tryParse(url);
-  if (uri == null) return;
+  if (uri == null || !{'http', 'https'}.contains(uri.scheme)) return;
   try {
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   } catch (_) {
     // Ignorar: el enlace seguirá siendo visible para el usuario.
   }

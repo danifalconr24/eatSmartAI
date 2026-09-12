@@ -75,14 +75,14 @@ public class ProductPromptBuilder {
         prompt.append("  \"nutrition\": \"<markdown>\",\n");
         prompt.append("  \"sources\": [\n");
         prompt.append("    {\"title\": \"OMS - Nutrición\", \"url\": \"https://www.who.int/es/health-topics/nutrition\"},\n");
-        prompt.append("    {\"title\": \"AESAN\", \"url\": \"https://www.aesan.gob.es/AECOSAN/web/home/home.htm\"}\n");
         prompt.append("  ],\n");
         prompt.append("  \"alternative\": { \"name\": \"producto más saludable\", \"reason\": \"por qué es mejor\", \"sources\": [{\"title\": \"OMS\", \"url\": \"https://www.who.int/es/health-topics/nutrition\"}] }\n");
         prompt.append("}\n\n");
         prompt.append("- \"score\": número entero de 0 a 10.\n");
         prompt.append("- \"sources\" (OPCIONAL en nutrition y alternative): array de 1 a 3 fuentes fiables con \"title\" y \"url\" HTTPS. ")
                 .append("Prioriza OMS, AESAN, NIH, Harvard T.H. Chan School of Public Health, EFSA, FAO.\n");
-        prompt.append("- \"alternative\": objeto con \"name\", \"reason\" y opcional \"sources\" si \"score\" es inferior a 7; null en caso contrario.\n");
+         prompt.append("- \"alternative\": objeto con \"name\", \"reason\" y opcional \"sources\" si \"score\" es inferior a 7; null en caso contrario.\n");
+         prompt.append("REGLAS DE CITACIÓN: cada URL debe ser una página real y específica que hayas usado para elaborar la información; no inventes URLs, no uses páginas de inicio genéricas y no cites una fuente que no hayas consultado. Si no puedes proporcionar una URL exacta y verificable, devuelve un array \"sources\" vacío.\n");
         prompt.append("El campo \"nutrition\" debe ser markdown con EXACTAMENTE estas secciones (con ##):\n");
         prompt.append("## Información nutricional\n");
         prompt.append("Tabla o lista breve con los valores aproximados por 100 g.\n");
