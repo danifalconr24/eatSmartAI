@@ -44,3 +44,10 @@ App (run from `app/`):
 Detailed per-package docs: `README.md` (root), `backend/README.md`, `app/README.md`. Trust code/config over READMEs when they conflict.
 
 # IMPORTANT: as we are sometimes working on worktrees, check before doing any change in backend if there is a valid .env file on current directory, if not do a "cp ~/Projects/eatSmartAI/backend/.env ."
+
+## Deployment access
+
+- VPS SSH host: `76.13.56.38`
+- VPS SSH user: `root`
+- SSH key: `/Users/danielfalconruiz/.ssh/id_ed25519`
+- SSH passphrase is intentionally not stored in repository files. Use local SSH agent/keychain.

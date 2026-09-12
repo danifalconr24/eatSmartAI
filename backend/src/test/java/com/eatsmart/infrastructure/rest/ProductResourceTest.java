@@ -14,6 +14,7 @@ import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.ProductAnalyzeResponse;
 
 import io.quarkus.test.InjectMock;
+import java.util.List;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
@@ -112,8 +113,8 @@ class ProductResourceTest {
 
     @Test
     void analyze_successScoreBelowThreshold_returnsAlternative() throws Exception {
-        ProductAnalyzeResponse.Alternative alt = new ProductAnalyzeResponse.Alternative("galletas integrales", "menos azúcar");
-        ProductAnalyzeResponse response = new ProductAnalyzeResponse("galletas oreo", 4, "## Info nutricional", alt);
+        ProductAnalyzeResponse.Alternative alt = new ProductAnalyzeResponse.Alternative("galletas integrales", "menos azúcar", List.of());
+        ProductAnalyzeResponse response = new ProductAnalyzeResponse("galletas oreo", 4, "## Info nutricional", alt, List.of());
         when(analyzeProduct.analyze(Mockito.any(), Mockito.anyString(),
                 Mockito.anyString(), Mockito.anyBoolean(),
                 Mockito.anyString(), Mockito.anyString()))
@@ -134,7 +135,7 @@ class ProductResourceTest {
 
     @Test
     void analyze_successScoreAboveThreshold_alternativeNull() throws Exception {
-        ProductAnalyzeResponse response = new ProductAnalyzeResponse("leche entera", 8, "## Info nutricional", null);
+        ProductAnalyzeResponse response = new ProductAnalyzeResponse("leche entera", 8, "## Info nutricional", null, List.of());
         when(analyzeProduct.analyze(Mockito.any(), Mockito.anyString(),
                 Mockito.anyString(), Mockito.anyBoolean(),
                 Mockito.anyString(), Mockito.anyString()))
@@ -155,7 +156,7 @@ class ProductResourceTest {
 
     @Test
     void analyze_withDietAndAllergies_returnsOk() throws Exception {
-        ProductAnalyzeResponse response = new ProductAnalyzeResponse("yogur natural", 7, "## Info", null);
+        ProductAnalyzeResponse response = new ProductAnalyzeResponse("yogur natural", 7, "## Info", null, List.of());
         when(analyzeProduct.analyze(Mockito.any(), Mockito.anyString(),
                 Mockito.anyString(), Mockito.anyBoolean(),
                 Mockito.anyString(), Mockito.anyString()))

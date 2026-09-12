@@ -77,7 +77,7 @@ class GenerateShoppingListUseCaseTest {
     private static ShoppingList sampleList() {
         return new ShoppingList(List.of(new ShoppingListCategory("Despensa",
                 List.of(new ShoppingListItem("Pan integral", ShoppingListItemType.REPLACE,
-                        "Pan blanco", "Más fibra")))));
+                        "Pan blanco", "Más fibra", List.of())))));
     }
 
     @Test

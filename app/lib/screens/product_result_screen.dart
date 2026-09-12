@@ -4,6 +4,7 @@ import '../api_client.dart';
 import '../data/chat_session.dart';
 import '../widgets/markdown_sections.dart';
 import '../widgets/score_header.dart';
+import '../widgets/sources_footer.dart';
 import 'chat_screen.dart';
 
 class ProductResultScreen extends StatefulWidget {
@@ -121,6 +122,7 @@ class _ProductResultScreenState extends State<ProductResultScreen> {
                     ),
                 if (alternative != null)
                   _AlternativeCard(alternative: alternative),
+                SourcesFooter(sources: result.sources),
               ],
             ),
           ),
@@ -194,6 +196,8 @@ class _AlternativeCard extends StatelessWidget {
               style: theme.textTheme.bodyMedium,
             ),
           ],
+          const SizedBox(height: 8),
+          SourceChipList(sources: alternative.sources),
         ],
       ),
     );

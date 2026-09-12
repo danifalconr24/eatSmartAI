@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import '../api_client.dart';
+
 /// Categorías fijas permitidas en las listas de la compra, en orden de
 /// visualización. Deben coincidir con el backend.
 const List<String> kShoppingCategories = [
@@ -23,6 +25,7 @@ class ShoppingListItem {
     required this.type,
     this.replaces,
     this.reason,
+    this.sources = const [],
     this.checked = false,
   }) : id = id ?? const Uuid().v4();
 
@@ -34,6 +37,9 @@ class ShoppingListItem {
   final ShoppingListItemType type;
   final String? replaces;
   final String? reason;
+
+  /// Fuentes que respaldan el motivo de sustitución/adición.
+  final List<Source> sources;
   final bool checked;
 
   ShoppingListItem copyWith({
@@ -42,6 +48,7 @@ class ShoppingListItem {
     ShoppingListItemType? type,
     String? replaces,
     String? reason,
+    List<Source>? sources,
     bool? checked,
   }) {
     return ShoppingListItem(
@@ -51,6 +58,7 @@ class ShoppingListItem {
       type: type ?? this.type,
       replaces: replaces ?? this.replaces,
       reason: reason ?? this.reason,
+      sources: sources ?? this.sources,
       checked: checked ?? this.checked,
     );
   }
@@ -62,6 +70,7 @@ class ShoppingListItem {
         'type': type.name,
         'replaces': replaces,
         'reason': reason,
+        'sources': sources.map((s) => {'title': s.title, 'url': s.url}).toList(),
         'checked': checked,
       };
 
@@ -74,9 +83,19 @@ class ShoppingListItem {
           ShoppingListItemType.keep,
       replaces: json['replaces']?.toString(),
       reason: json['reason']?.toString(),
+      sources: _parseSources(json['sources']),
       checked: json['checked'] == true,
     );
   }
+}
+
+List<Source> _parseSources(dynamic value) {
+  final list = value as List<dynamic>? ?? [];
+  return list
+      .whereType<Map<String, dynamic>>()
+      .map((e) => Source(title: e['title']?.toString() ?? '', url: e['url']?.toString() ?? ''))
+      .where((s) => s.title.isNotEmpty && s.url.startsWith('https://'))
+      .toList();
 }
 
 class ShoppingList {

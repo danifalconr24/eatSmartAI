@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.eatsmart.domain.exception.AnalysisException;
 import com.eatsmart.domain.exception.UnreadableReceiptException;
 import com.eatsmart.domain.model.AnalyzeResponse;
+import com.eatsmart.domain.model.Source;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 class AnalysisResultParserTest {
@@ -30,6 +31,27 @@ class AnalysisResultParserTest {
         assertThat(result.products()).containsExactly("leche", "pan");
         assertThat(result.suggestions()).isEqualTo("Compra saludable");
         assertThat(result.score()).isEqualTo(7);
+        assertThat(result.sources()).isEmpty();
+    }
+
+    @Test
+    void parse_validJsonWithSources_returnsSources() throws Exception {
+        String json = """
+                {"products": ["leche"], "score": 7, "suggestions": "Bien", \
+                "sources": [{"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}]}
+                """;
+        AnalyzeResponse result = parser.parse(json);
+        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
+    }
+
+    @Test
+    void parse_invalidSourceUrl_skipsSource() throws Exception {
+        String json = """
+                {"products": ["leche"], "score": 7, "suggestions": "Bien", \
+                "sources": [{"title": "Mal", "url": "http://inseguro.example"}, {"title": "OMS", "url": "https://www.who.int/es/health-topics/nutrition"}]}
+                """;
+        AnalyzeResponse result = parser.parse(json);
+        assertThat(result.sources()).containsExactly(new Source("OMS", "https://www.who.int/es/health-topics/nutrition"));
     }
 
     @Test

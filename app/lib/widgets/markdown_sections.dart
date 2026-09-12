@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'sources_footer.dart';
+
 /// One `##`-headed chunk of a markdown analysis response.
 class MarkdownSection {
   const MarkdownSection({required this.title, required this.body});
@@ -20,7 +22,7 @@ List<MarkdownSection> parseMarkdownSections(String markdown) {
     final title = currentTitle;
     if (title == null) return;
     final body = buffer.toString().trim();
-    if (body.isNotEmpty) {
+    if (body.isNotEmpty && !title.toLowerCase().contains('fuentes')) {
       sections.add(MarkdownSection(title: title, body: body));
     }
     buffer.clear();
@@ -104,6 +106,9 @@ class ExpandableSectionCard extends StatelessWidget {
                 styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
                   p: theme.textTheme.bodyMedium,
                 ),
+                onTapLink: (text, href, title) {
+                  if (href != null) openSourceUrl(href);
+                },
               ),
             ),
           ],

@@ -100,6 +100,23 @@ class ProductPromptBuilderTest {
         assertThat(prompt).contains("\"score\"");
         assertThat(prompt).contains("\"nutrition\"");
         assertThat(prompt).contains("\"alternative\"");
+        assertThat(prompt).contains("\"sources\"");
+    }
+
+    @Test
+    void build_requestsReliableSources() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("\"title\"");
+        assertThat(prompt).contains("\"url\"");
+        assertThat(prompt).contains("OMS");
+        assertThat(prompt).contains("AESAN");
+        assertThat(prompt).contains("https://");
+    }
+
+    @Test
+    void build_requestsSourcesSectionInNutrition() {
+        String prompt = builder.build("LOSE", false, "", "NONE");
+        assertThat(prompt).contains("## Fuentes");
     }
 
     @Test

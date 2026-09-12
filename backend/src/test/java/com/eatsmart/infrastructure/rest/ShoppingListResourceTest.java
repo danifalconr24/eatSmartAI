@@ -117,9 +117,9 @@ class ShoppingListResourceTest {
         ShoppingList list = new ShoppingList(List.of(
                 new ShoppingListCategory("Panadería y cereales", List.of(
                         new ShoppingListItem("Pan integral", ShoppingListItemType.REPLACE,
-                                "Pan blanco", "Más fibra"))),
+                                "Pan blanco", "Más fibra", List.of()))),
                 new ShoppingListCategory("Fruta y verdura", List.of(
-                        new ShoppingListItem("Manzanas", ShoppingListItemType.KEEP, null, null)))));
+                        new ShoppingListItem("Manzanas", ShoppingListItemType.KEEP, null, null, List.of())))));
         when(generateShoppingList.generate(Mockito.anyList(), Mockito.anyString(),
                 Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(list);

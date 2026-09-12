@@ -113,7 +113,7 @@ class ReceiptResourceTest {
 
     @Test
     void analyze_success_returnsOk() throws Exception {
-        AnalyzeResponse response = new AnalyzeResponse(List.of("leche", "pan"), "Compra equilibrada", 7);
+        AnalyzeResponse response = new AnalyzeResponse(List.of("leche", "pan"), "Compra equilibrada", 7, List.of());
         when(analyzeReceipt.analyze(Mockito.any(), Mockito.anyString(),
                 Mockito.anyString(), Mockito.anyBoolean(),
                 Mockito.anyString(), Mockito.anyString()))
@@ -137,7 +137,7 @@ class ReceiptResourceTest {
 
     @Test
     void analyze_goalMaintain_returnsOk() throws Exception {
-        AnalyzeResponse response = new AnalyzeResponse(List.of("fruta"), "Bien", 8);
+        AnalyzeResponse response = new AnalyzeResponse(List.of("fruta"), "Bien", 8, List.of());
         when(analyzeReceipt.analyze(Mockito.any(), Mockito.anyString(),
                 Mockito.anyString(), Mockito.anyBoolean(),
                 Mockito.anyString(), Mockito.anyString()))
@@ -155,7 +155,7 @@ class ReceiptResourceTest {
 
     @Test
     void analyze_goalGain_returnsOk() throws Exception {
-        AnalyzeResponse response = new AnalyzeResponse(List.of("proteina"), "Bien", 5);
+        AnalyzeResponse response = new AnalyzeResponse(List.of("proteina"), "Bien", 5, List.of());
         when(analyzeReceipt.analyze(Mockito.any(), Mockito.anyString(),
                 Mockito.anyString(), Mockito.anyBoolean(),
                 Mockito.anyString(), Mockito.anyString()))

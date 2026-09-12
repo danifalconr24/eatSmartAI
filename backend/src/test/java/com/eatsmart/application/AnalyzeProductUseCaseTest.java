@@ -78,7 +78,9 @@ class AnalyzeProductUseCaseTest {
         doReturn(List.of(handle(primary))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
         ProductAnalyzeResponse parsed = new ProductAnalyzeResponse(
-                "galletas oreo", 4, "## Info", new ProductAnalyzeResponse.Alternative("integrales", "mejor"));
+                "galletas oreo", 4, "## Info",
+                new ProductAnalyzeResponse.Alternative("integrales", "mejor", List.of()),
+                List.of());
         doReturn(parsed).when(resultParser).parse("raw");
 
         ProductAnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
@@ -96,7 +98,7 @@ class AnalyzeProductUseCaseTest {
         FakeFallbackGateway fallback = new FakeFallbackGateway();
         doReturn(List.of(handle(primary), handle(fallback))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
-        ProductAnalyzeResponse parsed = new ProductAnalyzeResponse("leche", 8, "## Info", null);
+        ProductAnalyzeResponse parsed = new ProductAnalyzeResponse("leche", 8, "## Info", null, List.of());
         doReturn(parsed).when(resultParser).parse("raw");
 
         ProductAnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
@@ -114,7 +116,7 @@ class AnalyzeProductUseCaseTest {
         FakeFallbackGateway fallback = new FakeFallbackGateway();
         doReturn(List.of(handle(primary), handle(fallback))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
-        ProductAnalyzeResponse parsed = new ProductAnalyzeResponse("yogur", 6, "## Info", null);
+        ProductAnalyzeResponse parsed = new ProductAnalyzeResponse("yogur", 6, "## Info", null, List.of());
         doReturn(parsed).when(resultParser).parse("raw");
 
         ProductAnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
@@ -167,7 +169,9 @@ class AnalyzeProductUseCaseTest {
         doReturn(List.of(handle(primary))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
         ProductAnalyzeResponse parsed = new ProductAnalyzeResponse(
-                "leche", 8, "## Info", new ProductAnalyzeResponse.Alternative("soja", "razón"));
+                "leche", 8, "## Info",
+                new ProductAnalyzeResponse.Alternative("soja", "razón", List.of()),
+                List.of());
         doReturn(parsed).when(resultParser).parse("raw");
 
         ProductAnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
@@ -182,8 +186,8 @@ class AnalyzeProductUseCaseTest {
         FakePrimaryGateway primary = new FakePrimaryGateway();
         doReturn(List.of(handle(primary))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
-        ProductAnalyzeResponse.Alternative alt = new ProductAnalyzeResponse.Alternative("integrales", "mejor");
-        ProductAnalyzeResponse parsed = new ProductAnalyzeResponse("oreo", 4, "## Info", alt);
+        ProductAnalyzeResponse.Alternative alt = new ProductAnalyzeResponse.Alternative("integrales", "mejor", List.of());
+        ProductAnalyzeResponse parsed = new ProductAnalyzeResponse("oreo", 4, "## Info", alt, List.of());
         doReturn(parsed).when(resultParser).parse("raw");
 
         ProductAnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",
@@ -200,7 +204,9 @@ class AnalyzeProductUseCaseTest {
         doReturn(List.of(handle(primary))).when(gatewaysInstance).handles();
         doReturn("prompt").when(promptBuilder).build("LOSE", false, "", "NONE");
         ProductAnalyzeResponse parsed = new ProductAnalyzeResponse(
-                "galletas", 7, "## Info", new ProductAnalyzeResponse.Alternative("otras", "x"));
+                "galletas", 7, "## Info",
+                new ProductAnalyzeResponse.Alternative("otras", "x", List.of()),
+                List.of());
         doReturn(parsed).when(resultParser).parse("raw");
 
         ProductAnalyzeResponse response = useCase.analyze(new byte[]{1}, "image/jpeg",

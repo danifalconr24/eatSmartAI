@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'ads/ad_service.dart';
 import 'ads/consent_service.dart';
 import 'ads/credit_service.dart';
 import 'screens/home_screen.dart';

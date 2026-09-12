@@ -6,6 +6,7 @@ import com.eatsmart.domain.model.ShoppingList;
 import com.eatsmart.domain.model.ShoppingListCategory;
 import com.eatsmart.domain.model.ShoppingListItem;
 import com.eatsmart.domain.model.ShoppingListItemType;
+import com.eatsmart.domain.model.Source;
 
 /** Response body for POST /api/shopping-lists/generate. */
 public record GenerateShoppingListResponse(List<Category> categories) {
@@ -13,7 +14,8 @@ public record GenerateShoppingListResponse(List<Category> categories) {
     public record Category(String name, List<Item> items) {
     }
 
-    public record Item(String name, ShoppingListItemType type, String replaces, String reason) {
+    public record Item(String name, ShoppingListItemType type, String replaces, String reason,
+            List<Source> sources) {
     }
 
     public static GenerateShoppingListResponse from(ShoppingList list) {
@@ -29,6 +31,6 @@ public record GenerateShoppingListResponse(List<Category> categories) {
     }
 
     private static Item from(ShoppingListItem item) {
-        return new Item(item.name(), item.type(), item.replaces(), item.reason());
+        return new Item(item.name(), item.type(), item.replaces(), item.reason(), item.sources());
     }
 }

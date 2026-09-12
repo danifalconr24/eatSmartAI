@@ -63,9 +63,17 @@ public class ReceiptPromptBuilder {
         prompt.append("{\n");
         prompt.append("  \"products\": [\"producto 1\", \"producto 2\"],\n");
         prompt.append("  \"score\": 7,\n");
-        prompt.append("  \"suggestions\": \"<markdown>\"\n");
+        prompt.append("  \"suggestions\": \"<markdown>\",\n");
+        prompt.append("  \"sources\": [\n");
+        prompt.append("    {\"title\": \"OMS - Nutrición\", \"url\": \"https://www.who.int/es/health-topics/nutrition\"},\n");
+        prompt.append("  ]\n");
         prompt.append("}\n\n");
         prompt.append("- \"score\": número entero de 0 a 10.\n");
+        prompt.append("- \"sources\" (OPCIONAL): array de 1 a 3 fuentes fiables que respalden las recomendaciones. ")
+                .append("Cada fuente debe tener \"title\" (nombre corto) y \"url\" (enlace HTTPS válido). ");
+        prompt.append("Prioriza fuentes reconocidas: OMS, AESAN, NIH, Harvard T.H. Chan School of Public Health, EFSA, FAO.\n");
+         prompt.append("Cita las fuentes al final del campo \"suggestions\" en una sección \"## Fuentes\" con los enlaces proporcionados en \"sources\".\n");
+         prompt.append("REGLAS DE CITACIÓN: cada URL debe ser una página real y específica que hayas usado para elaborar la recomendación; no inventes URLs, no uses páginas de inicio genéricas y no cites una fuente que no hayas consultado. Si no puedes proporcionar una URL exacta y verificable, devuelve \"sources\": [].\n");
         prompt.append("El campo \"suggestions\" debe ser markdown con EXACTAMENTE estas secciones (con ##):\n");
         prompt.append("## Resumen general\n");
         prompt.append("Valoración de la compra en 2-3 frases como máximo: breve y directa.\n");

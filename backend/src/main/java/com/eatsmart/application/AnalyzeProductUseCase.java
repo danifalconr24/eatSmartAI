@@ -86,7 +86,8 @@ public class AnalyzeProductUseCase {
 
     private static ProductAnalyzeResponse dropAlternativeIfHealthy(ProductAnalyzeResponse response) {
         if (response.score() >= LOW_SCORE_THRESHOLD && response.alternative() != null) {
-            return new ProductAnalyzeResponse(response.product(), response.score(), response.nutrition(), null);
+            return new ProductAnalyzeResponse(response.product(), response.score(), response.nutrition(), null,
+                    response.sources());
         }
         return response;
     }
