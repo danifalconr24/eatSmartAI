@@ -24,7 +24,7 @@ class CreditService extends ChangeNotifier {
   /// Sobreescribible con:
   /// flutter run --dart-define=INITIAL_CREDITS=5
   static const int initialCredits =
-      int.fromEnvironment('INITIAL_CREDITS', defaultValue: 1);
+      int.fromEnvironment('INITIAL_CREDITS', defaultValue: 3);
 
   int _balance = 0;
   bool _loaded = false;
