@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ads/consent_service.dart';
 import '../widgets/credits_chip.dart';
 import '../widgets/floating_nav_space.dart';
 import 'scan_screen.dart';
@@ -23,7 +24,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _measureNavBar());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onFirstFrame());
+  }
+
+  /// Runs once the first frame is rendered: measures the floating nav bar and
+  /// requests ATT/consent so the iOS permission dialog has a live window.
+  void _onFirstFrame() {
+    _measureNavBar();
+    ConsentService.initialize();
   }
 
   /// Mide la altura real de la barra flotante (SafeArea + margen + barra) y

@@ -29,7 +29,12 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _init();
+  }
+
+  Future<void> _init() async {
+    await AdService.instance.initialized;
+    if (mounted) _load();
   }
 
   Future<void> _load() async {

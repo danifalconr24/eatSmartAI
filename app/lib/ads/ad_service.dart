@@ -24,8 +24,13 @@ class AdService {
       : 'ca-app-pub-9121163197250140/7734044964';
 
   bool _initialized = false;
+  final Completer<void> _initCompleter = Completer<void>();
   RewardedAd? _rewardedAd;
   bool _loading = false;
+
+  /// Future completed once the Mobile Ads SDK has been initialized (or failed
+  /// to initialize). Widgets should await this before loading ads.
+  Future<void> get initialized => _initCompleter.future;
 
   /// Initializes the Mobile Ads SDK and preloads the first rewarded ad.
   Future<void> initialize() async {
@@ -35,6 +40,8 @@ class AdService {
       await MobileAds.instance.initialize();
     } catch (e) {
       debugPrint('AdService: MobileAds init failed: $e');
+    } finally {
+      if (!_initCompleter.isCompleted) _initCompleter.complete();
     }
     preloadRewarded();
   }

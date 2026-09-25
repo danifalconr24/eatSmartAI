@@ -16,7 +16,9 @@ class ConsentService {
 
   /// Requests consent and ATT, then initializes the ad SDK.
   ///
-  /// Call once before [runApp]. Safe to call again; subsequent calls no-op.
+  /// Call after the first frame is rendered (e.g. inside a post-frame
+  /// callback) so the ATT dialog has a live UI window to attach to. Safe to
+  /// call again; subsequent calls no-op.
   ///
   /// On iOS the native App Tracking Transparency prompt is requested first so
   /// no consent message (which may carry a "Consent"-style button) precedes it.

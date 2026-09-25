@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'ads/consent_service.dart';
 import 'ads/credit_service.dart';
 import 'screens/home_screen.dart';
 
@@ -11,7 +10,6 @@ void main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-  await ConsentService.initialize();
   CreditService.instance.initialize();
   runApp(const EatSmartAiApp());
 }
