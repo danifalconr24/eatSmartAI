@@ -22,14 +22,17 @@ class ConsentService {
   ///
   /// On iOS the native App Tracking Transparency prompt is requested first so
   /// no consent message (which may carry a "Consent"-style button) precedes it.
-  /// UMP (GDPR/EEA) consent is requested afterwards. On Android the ATT call
-  /// is a no-op, so the flow stays UMP-only.
+  /// UMP (GDPR/EEA) consent is requested afterwards, unless the user denies
+  /// ATT, in which case the GDPR modal is skipped. On Android the ATT call is
+  /// a no-op, so the flow stays UMP-only.
   static Future<void> initialize() async {
     if (_completed) return;
 
-    await _requestTrackingTransparency();
-    await _updateConsentInfo();
-    await _showFormIfRequired();
+    final canShowGdpr = await _requestTrackingTransparency();
+    if (canShowGdpr) {
+      await _updateConsentInfo();
+      await _showFormIfRequired();
+    }
 
     AdService.instance.initialize();
     _completed = true;
@@ -66,18 +69,24 @@ class ConsentService {
     }
   }
 
-  static Future<void> _requestTrackingTransparency() async {
-    if (!Platform.isIOS) return;
+  /// Requests the iOS ATT prompt. Returns `false` if the user denies ATT (or
+  /// already denied it), which suppresses the GDPR modal. Returns `true` on
+  /// Android, on iOS authorization/restriction, or if the status check fails,
+  /// so the GDPR flow still runs in those cases.
+  static Future<bool> _requestTrackingTransparency() async {
+    if (!Platform.isIOS) return true;
     try {
-      final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+      var status = await AppTrackingTransparency.trackingAuthorizationStatus;
       if (status == TrackingStatus.notDetermined) {
-        final result = await AppTrackingTransparency.requestTrackingAuthorization();
-        debugPrint('ConsentService: ATT result = $result');
+        status = await AppTrackingTransparency.requestTrackingAuthorization();
+        debugPrint('ConsentService: ATT result = $status');
       } else {
         debugPrint('ConsentService: ATT status = $status');
       }
+      return status != TrackingStatus.denied;
     } catch (e, s) {
       debugPrint('ConsentService: ATT failed: $e\n$s');
+      return true;
     }
   }
 }
