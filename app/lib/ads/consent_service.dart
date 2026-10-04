@@ -22,9 +22,9 @@ class ConsentService {
   ///
   /// On iOS the native App Tracking Transparency prompt is requested first so
   /// no consent message (which may carry a "Consent"-style button) precedes it.
-  /// UMP (GDPR/EEA) consent is requested afterwards, unless the user denies
-  /// ATT, in which case the GDPR modal is skipped. On Android the ATT call is
-  /// a no-op, so the flow stays UMP-only.
+  /// UMP (GDPR/EEA) consent is requested afterwards, unless ATT is denied or
+  /// restricted, in which case the GDPR modal is skipped. On Android the ATT
+  /// call is a no-op, so the flow stays UMP-only.
   static Future<void> initialize() async {
     if (_completed) return;
 
@@ -69,10 +69,10 @@ class ConsentService {
     }
   }
 
-  /// Requests the iOS ATT prompt. Returns `false` if the user denies ATT (or
-  /// already denied it), which suppresses the GDPR modal. Returns `true` on
-  /// Android, on iOS authorization/restriction, or if the status check fails,
-  /// so the GDPR flow still runs in those cases.
+  /// Requests the iOS ATT prompt. Returns `false` if ATT ends as `denied` or
+  /// `restricted`, which suppresses the GDPR modal because tracking is not
+  /// allowed. Returns `true` on Android, on iOS authorization, or if the status
+  /// check fails, so the GDPR flow still runs in those cases.
   static Future<bool> _requestTrackingTransparency() async {
     if (!Platform.isIOS) return true;
     try {
@@ -83,7 +83,7 @@ class ConsentService {
       } else {
         debugPrint('ConsentService: ATT status = $status');
       }
-      return status != TrackingStatus.denied;
+      return status != TrackingStatus.denied && status != TrackingStatus.restricted;
     } catch (e, s) {
       debugPrint('ConsentService: ATT failed: $e\n$s');
       return true;
